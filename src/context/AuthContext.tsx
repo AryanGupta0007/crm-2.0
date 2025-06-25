@@ -50,6 +50,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const res = await response.json();
       setUser(res.user);
       setToken(res.token);
+      // console.log(res)
+      
+      localStorage.setItem('userType', res.emp.type);
       localStorage.setItem('accessToken', res.token);
     } catch (err: any) {
       setError(err.message);
@@ -75,6 +78,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const res = await response.json();
       setUser(res.user);
       setToken(res.token);
+      
+      console.log(res)
       localStorage.setItem('accessToken', res.token);
       localStorage.setItem('userType', res.emp.type);
     } catch (err: any) {

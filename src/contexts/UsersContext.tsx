@@ -16,7 +16,7 @@ export const UsersProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch('/api/users');
+      const res = await fetch('http:localhost:8000/api/users');
       if (res.ok) {
         const data = await res.json();
         setUsers(data.users);

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../context/AuthContext';
 
 interface LoginFormProps {
   onSuccess: () => void;
@@ -14,23 +14,15 @@ export const LoginForm = ({ onSuccess, onSwitchToSignup }: LoginFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  
-  const { login } = useAuth();
+  const { login, loading, error } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
     try {
       await login(email, password);
       onSuccess();
     } catch (err) {
-      setError('Invalid email or password');
-    } finally {
-      setIsLoading(false);
+      // error is handled by AuthContext
     }
   };
 
@@ -95,10 +87,10 @@ export const LoginForm = ({ onSuccess, onSwitchToSignup }: LoginFormProps) => {
             type="submit"
             variant="primary"
             size="lg"
-            disabled={isLoading}
+            disabled={loading}
             className="w-full"
           >
-            {isLoading ? 'Signing In...' : 'Sign In'}
+            {loading ? 'Signing In...' : 'Sign In'}
           </Button>
         </form>
 

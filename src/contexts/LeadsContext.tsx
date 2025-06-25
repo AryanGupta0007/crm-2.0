@@ -16,7 +16,7 @@ export const LeadsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const fetchLeads = useCallback(async () => {
     try {
-      const res = await fetch('/api/leads');
+      const res = await fetch('http://localhost:8000/api/leads');
       if (res.ok) {
         const data = await res.json();
         setLeads(data.leads);

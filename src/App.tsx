@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from './hooks/useAuth';
+import { useAuth } from './context/AuthContext';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { Navigation } from './components/layout/Navigation';
 import { LoginForm } from './components/auth/LoginForm';
@@ -12,15 +12,17 @@ import { OperationsDashboard } from './pages/OperationsDashboard';
 import { AccountsDashboard } from './pages/AccountsDashboard';
 
 function App() {
-  const { user, isLoading } = useAuth();
+  const { user, loading } = useAuth();
   const [currentPath, setCurrentPath] = useState('/');
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      // Redirect based on user role after successful login/signup
-      switch (user.role) {
+    let userType = localStorage.getItem('userType')
+    if (userType) {
+
+      // Redirect based on user type after successful login/signup
+      switch (userType) {
         case 'accounts':
           setCurrentPath('/accounts');
           break;
@@ -47,10 +49,6 @@ function App() {
   const handleAuthSuccess = () => {
     setShowLogin(false);
     setShowSignup(false);
-    // The useEffect above will handle the redirection
-    setTimeout(() => {
-      window.location.reload();
-    }, 2000);
   };
 
   const handleNavigate = (path: string) => {
@@ -67,7 +65,7 @@ function App() {
     setShowLogin(true);
   };
 
-  if (isLoading) {
+  if (loading) {
     return <LoadingSpinner />;
   }
 
@@ -94,10 +92,10 @@ function App() {
         return <AdminDashboard />;
       case '/accounts':
         // Allow admin to view AccountsDashboard
-        if (user.role === 'admin') {
+        if (user.type === 'admin') {
           return <AccountsDashboard />;
         }
-        // For any other role, redirect to home/landing
+        // For any other type, redirect to home/landing
         return (
           <LandingPage 
             onShowLogin={() => setShowLogin(true)} 

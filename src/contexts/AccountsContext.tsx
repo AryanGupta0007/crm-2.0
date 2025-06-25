@@ -16,7 +16,7 @@ export const AccountsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const fetchAccounts = useCallback(async () => {
     try {
-      const res = await fetch('/api/accounts');
+      const res = await fetch('http:localhost:8000/api/gen/under-review-leads/');
       if (res.ok) {
         const data = await res.json();
         setAccounts(data.accounts);

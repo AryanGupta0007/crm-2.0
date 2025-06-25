@@ -16,7 +16,7 @@ export const BatchesProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const fetchBatches = useCallback(async () => {
     try {
-      const res = await fetch('/api/batches');
+      const res = await fetch('http://localhost:8000/api/gen/batches');
       if (res.ok) {
         const data = await res.json();
         setBatches(data.batches);

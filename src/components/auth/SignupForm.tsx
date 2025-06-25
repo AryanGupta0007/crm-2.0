@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { User, Mail, Phone, Lock, Eye, EyeOff, UserPlus } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../context/AuthContext';
 
 interface SignupFormProps {
   onSuccess: () => void;
@@ -21,42 +21,29 @@ export const SignupForm = ({ onSuccess, onSwitchToLogin }: SignupFormProps) => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  
-  const { signup } = useAuth();
+  const { register, loading, error } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
-    // Validation
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      setIsLoading(false);
+      // handle error locally if needed
       return;
     }
-
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      setIsLoading(false);
+      // handle error locally if needed
       return;
     }
-
     try {
-      await signup({
+      await register({
         name: formData.name,
         email: formData.email,
-        phone: formData.phone,
-        role: formData.role,
-        password: formData.password
+        password: formData.password,
+        contact: formData.phone,
+        type: formData.role,
       });
       onSuccess();
-    } catch (err: any) {
-      setError(err.message || 'Failed to create account');
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      // error is handled by AuthContext
     }
   };
 
@@ -182,10 +169,10 @@ export const SignupForm = ({ onSuccess, onSwitchToLogin }: SignupFormProps) => {
             type="submit"
             variant="primary"
             size="lg"
-            disabled={isLoading}
+            disabled={loading}
             className="w-full"
           >
-            {isLoading ? 'Creating Account...' : 'Create Account'}
+            {loading ? 'Creating Account...' : 'Create Account'}
           </Button>
         </form>
 

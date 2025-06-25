@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Lead, Account, DashboardStats, Batch } from '../types';
+import { useAuth } from './AuthContext';
 
 interface User {
   id: number;
@@ -25,6 +26,7 @@ interface ApiContextType {
 const ApiContext = createContext<ApiContextType | undefined>(undefined);
 
 export const ApiProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -96,7 +98,7 @@ export const ApiProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     setError(null);
     await Promise.all([
-      fetchUsers(),
+      // fetchUsers(),
       fetchLeads(),
       fetchAccounts(),
       fetchBatches(),
@@ -106,8 +108,10 @@ export const ApiProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    fetchAllData();
-  }, []);
+    if (user) {
+      fetchAllData();
+    }
+  }, [user]);
 
   return (
     <ApiContext.Provider value={{

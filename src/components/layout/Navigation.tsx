@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Anchor, Users, BarChart3, CheckSquare, LogOut, DollarSign } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 
 interface NavigationProps {
@@ -16,14 +16,12 @@ export const Navigation = ({ currentPath, onNavigate }: NavigationProps) => {
   if (!user) return null;
 
   const getNavItems = () => {
-    switch (user.role) {
+    switch (user.type) {
       case 'admin':
         return [
           { path: '/admin', label: 'Dashboard', icon: BarChart3 },
-          // { path: '/admin/leads', label: 'Lead Management', icon: Users },
-          // { path: '/admin/employees', label: 'Employee Management', icon: Users },
           { path: '/accounts', label: 'Accounts', icon: DollarSign },
-          { path: '/operations', label: 'Operations', icon: CheckSquare }, // Add operations access for admin
+          { path: '/operations', label: 'Operations', icon: CheckSquare },
         ];
       case 'accounts':
         return [
@@ -32,11 +30,9 @@ export const Navigation = ({ currentPath, onNavigate }: NavigationProps) => {
       case 'sales':
         return [
           { path: '/sales', label: 'My Leads', icon: Users },
-          // { path: '/sales/dnp', label: 'DNP Management', icon: X },
         ];
       case 'operations':
         return [
-          // { path: '/operations', label: 'Verifications', icon: CheckSquare },
           { path: '/operations/tracker', label: 'Operations Tracker', icon: BarChart3 },
         ];
       default:
@@ -57,13 +53,6 @@ export const Navigation = ({ currentPath, onNavigate }: NavigationProps) => {
         
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
-            {user.avatar && (
-              <img 
-                src={user.avatar} 
-                alt={user.name}
-                className="w-8 h-8 rounded-full object-cover"
-              />
-            )}
             <span className="text-sm font-medium text-gray-700 hidden sm:block">
               {user.name}
             </span>
@@ -177,16 +166,12 @@ export const Navigation = ({ currentPath, onNavigate }: NavigationProps) => {
         
         <div className="px-4 py-4 border-t border-gray-200">
           <div className="flex items-center space-x-3 mb-4">
-            {user.avatar && (
-              <img 
-                src={user.avatar} 
-                alt={user.name}
-                className="w-10 h-10 rounded-full object-cover"
-              />
-            )}
+            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
+              {(user.name && typeof user.name === 'string') ? user.name.charAt(0) : '?'}
+            </div>
             <div>
-              <p className="font-medium text-gray-900">{user.name}</p>
-              <p className="text-sm text-gray-500 capitalize">{user.role}</p>
+              <p className="font-medium text-gray-900">{user.name || 'User'}</p>
+              <p className="text-sm text-gray-500 capitalize">{user.type}</p>
             </div>
           </div>
           
