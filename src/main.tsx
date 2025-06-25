@@ -8,9 +8,10 @@ import { BatchesProvider } from './contexts/BatchesContext';
 import { UsersProvider } from './contexts/UsersContext';
 import { DashboardStatsProvider } from './contexts/DashboardStatsContext';
 import { AuthProvider } from './context/AuthContext';
-
+import { AdminProvider } from './contexts/AdminContext.tsx';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <AdminProvider>
     <AuthProvider>
       <LeadsProvider>
         <AccountsProvider>
@@ -24,5 +25,6 @@ createRoot(document.getElementById('root')!).render(
         </AccountsProvider>
       </LeadsProvider>
     </AuthProvider>
+    </AdminProvider>
   </StrictMode>
 );

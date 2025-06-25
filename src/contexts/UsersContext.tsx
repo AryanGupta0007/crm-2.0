@@ -16,7 +16,10 @@ export const UsersProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch('http:localhost:8000/api/users');
+      const token = localStorage.getItem('accessToken');
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `bearer ${token}`;
+      const res = await fetch('http://localhost:8000/api/users', { headers });
       if (res.ok) {
         const data = await res.json();
         setUsers(data.users);

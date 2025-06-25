@@ -35,6 +35,7 @@ export const ApiProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // fetchWithAuth ensures the Authorization header is sent for all requests except login/register
   const fetchWithAuth = async (url: string) => {
     const token = localStorage.getItem('accessToken');
     const headers: HeadersInit = { 'Content-Type': 'application/json' };

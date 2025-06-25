@@ -6,16 +6,10 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { BatchManagement } from '../components/batches/BatchManagement';
 import { Lead } from '../types';
-import { LeadsContext } from '../contexts/LeadsContext';
-import { UsersContext } from '../contexts/UsersContext';
-import { BatchesContext } from '../contexts/BatchesContext';
-import { DashboardStatsContext } from '../contexts/DashboardStatsContext';
+import { AdminContext } from '../contexts/AdminContext';
 
 export const AdminDashboard = () => {
-  const { leads, fetchLeads } = useContext(LeadsContext);
-  const { users, fetchUsers } = useContext(UsersContext);
-  const { batches, fetchBatches } = useContext(BatchesContext);
-  const { stats, fetchStats } = useContext(DashboardStatsContext);
+  const { leads, fetchLeads, batches, fetchBatches, updateLeadAssignedTo, dashboardStats, fetchDashboardStats, users, fetchUsers, createBatch } = useContext(AdminContext);
   const [activeTab, setActiveTab] = useState('overview');
   const [leadsToShow, setLeadsToShow] = useState(10);
   const [globalSearch, setGlobalSearch] = useState('');
@@ -28,8 +22,15 @@ export const AdminDashboard = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef2 = useRef<HTMLInputElement>(null);
   const leadRowRefs = useRef<{ [leadId: string]: HTMLTableRowElement | null }>({}); // NEW
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
 
   useEffect(() => {
+    fetchLeads();
+    fetchBatches();
+    fetchUsers();
+    fetchDashboardStats();
     if (activeTab !== 'leads') return;
     const handleScroll = () => {
       const container = tableContainerRef.current;
@@ -88,7 +89,7 @@ export const AdminDashboard = () => {
           });
         }
       });
-      fetchLeads(updatedLeads);
+      fetchLeads();
     }
   };
 
@@ -138,7 +139,7 @@ export const AdminDashboard = () => {
     }
   }, [highlightedLeadId, activeTab, leadsToShow]);
 
-  const salesTeamMembers = users.filter(user => user.role === 'sales');
+  const salesTeamMembers = users.filter(user => user.employee_details.type === 'sales');
 
   // Filtered leads for table
   const filteredLeads = leads.filter(lead => {
@@ -161,6 +162,35 @@ export const AdminDashboard = () => {
   // Handler to reset needed leads for a caller
   const handleResetNeededLeads = (callerId: string) => {
     setCallerNeededLeads(prev => ({ ...prev, [callerId]: 50 }));
+  };
+
+  // File upload handler for leads
+  const handleLeadsFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadError(null);
+    setUploadSuccess(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch('http://localhost:8000/api/admin/leads/', {
+        method: 'POST',
+        headers: token ? { 'Authorization': `${token}` } : undefined,
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to upload leads');
+      }
+      setUploadSuccess('Leads uploaded successfully!');
+      fetchLeads(); // Refresh leads after upload
+    } catch (err: any) {
+      setUploadError(err.message || 'Failed to upload leads');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -233,28 +263,28 @@ export const AdminDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
           title="Total Leads"
-          value={stats.totalLeads}
+          value={dashboardStats?.totalLeads ?? 0}
           icon={Users}
           color="blue"
           trend={12}
         />
         <StatsCard
           title="Active Leads"
-          value={stats.activeLeads}
+          value={dashboardStats?.activeLeads ?? 0}
           icon={TrendingUp}
           color="orange"
           trend={8}
         />
         <StatsCard
           title="Converted"
-          value={stats.convertedLeads}
+          value={dashboardStats?.convertedLeads ?? 0}
           icon={UserCheck}
           color="green"
           trend={15}
         />
         <StatsCard
           title="DNP Leads"
-          value={stats.dnpLeads}
+          value={dashboardStats?.dnpLeads ?? 0}
           icon={UserX}
           color="coral"
           trend={-5}
@@ -312,7 +342,7 @@ export const AdminDashboard = () => {
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Team Performance</h3>
               <div className="space-y-4">
-                {users.filter(u => u.role !== 'admin').map((user) => (
+                {users.filter(u => u.employee_details.type !== 'admin').map((user) => (
                   <div key={user.id} className="flex items-center space-x-3">
                     <img 
                       src={user.avatar} 
@@ -321,11 +351,11 @@ export const AdminDashboard = () => {
                     />
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">{user.name}</p>
-                      <p className="text-sm text-gray-500 capitalize">{user.role}</p>
+                      <p className="text-sm text-gray-500 capitalize">{user.employee_details.type}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-gray-900">
-                        {user.role === 'sales' ? '45' : '23'} processed
+                        {user.employee_details.type === 'sales' ? '45' : '23'} processed
                       </p>
                       <p className="text-sm text-green-600">92% efficiency</p>
                     </div>
@@ -364,12 +394,14 @@ export const AdminDashboard = () => {
                   accept=".csv,.xlsx"
                   ref={fileInputRef2}
                   style={{ display: 'none' }}
-                  onChange={handleFileChange}
+                  onChange={handleLeadsFileUpload}
                 />
-                <Button variant="primary" onClick={handleUploadClick2}>
+                <Button variant="primary" onClick={handleUploadClick2} disabled={uploading}>
                   <Upload size={16} className="mr-2" />
-                  Upload Leads
+                  {uploading ? 'Uploading...' : 'Upload Leads'}
                 </Button>
+                {uploadError && <span className="text-red-600 ml-2">{uploadError}</span>}
+                {uploadSuccess && <span className="text-green-600 ml-2">{uploadSuccess}</span>}
               </div>
             </Card>
 
@@ -401,12 +433,12 @@ export const AdminDashboard = () => {
                         <td className="py-3 px-4">
                           <p className="font-medium text-gray-900">{lead.name}</p>
                         </td>
-                        <td className="py-3 px-4">{lead.phone}</td>
+                        <td className="py-3 px-4">{lead.contact_number}</td>
                         <td className="py-3 px-4">
                           <div>
                             <span className="font-medium">{lead.source}</span>
                             <span className="ml-2 text-xs text-gray-500">
-                              {lead.createdAt ? new Date(lead.createdAt).toLocaleDateString() : ''}
+                              {lead.created_at ? new Date(lead.created_at).toLocaleDateString() : ''}
                             </span>
                           </div>
                         </td>
@@ -433,6 +465,7 @@ export const AdminDashboard = () => {
                             value={lead.assignedTo || ''}
                             onChange={(e) => {
                               // Handle assignment change
+                              updateLeadAssignedTo({ userID: Number(e.target.value), leadID: Number(lead.id) })
                               console.log('Assigned to:', e.target.value);
                             }}
                             className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-maritime-500"
@@ -469,13 +502,13 @@ export const AdminDashboard = () => {
                 <Card key={user.id} className="p-4" hover>
                   <div className="flex items-center space-x-3 mb-4">
                     <img 
-                      src={user.avatar} 
+                      src={'data:image/jpeg;base64,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'} 
                       alt={user.name}
                       className="w-12 h-12 rounded-full object-cover"
                     />
                     <div>
                       <p className="font-medium text-gray-900">{user.name}</p>
-                      <p className="text-sm text-gray-500 capitalize">{user.role}</p>
+                      <p className="text-sm text-gray-500 capitalize">{user.employee_details.type}</p>
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mb-4">{user.email}</p>
@@ -483,7 +516,7 @@ export const AdminDashboard = () => {
                     <Button size="sm" variant="outline" className="flex-1">
                       Edit
                     </Button>
-                    {user.role !== 'admin' && (
+                    {user.employee_details.type !== 'admin' && (
                       <Button size="sm" variant="ghost" className="flex-1">
                         Remove
                       </Button>
@@ -521,7 +554,7 @@ export const AdminDashboard = () => {
                       <td className="py-3 px-4">
                         <div className="flex items-center space-x-3">
                           <img 
-                            src={caller.avatar} 
+                            src={'data:image/jpeg;base64,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'} 
                             alt={caller.name}
                             className="w-8 h-8 rounded-full object-cover"
                           />
@@ -543,7 +576,7 @@ export const AdminDashboard = () => {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center space-x-2">
-                          <span>{getNeededLeads(caller.id)}</span>
+                          {/* <span>{getNeededLeads(caller.id)}</span>
                           <Button
                             size="xs"
                             variant="outline"
@@ -551,7 +584,7 @@ export const AdminDashboard = () => {
                             className="ml-2"
                           >
                             Reset
-                          </Button>
+                          </Button> */}
                         </div>
                       </td>
                       <td className="py-3 px-4">
@@ -579,6 +612,7 @@ export const AdminDashboard = () => {
             batches={batches}
             onAddBatch={(newBatch) => {
               console.log('Adding new batch:', newBatch);
+              createBatch(newBatch);
               // Add batch handling logic here
             }}
           />

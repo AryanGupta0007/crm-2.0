@@ -2,14 +2,14 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'sales' | 'operations' | 'accounts';
+  employee_details: Object;
   avatar?: string;
 }
 
 export interface Lead {
   id: string;
   name: string;
-  phone: string;
+  contact_number: string;
   email: string;
   source: string;
   status: 'new' | 'pick' | 'dnp' | 'contacted' | 'callback' | 'not_interested' | 'delete';
@@ -23,7 +23,7 @@ export interface Lead {
   followUpDate?: string;
   comments: string[];
   assignedTo?: string;
-  createdAt: string;
+  created_at: string;
   updatedAt: string;
 }
 
@@ -70,11 +70,18 @@ export interface DashboardStats {
   dnpLeads: number;
 }
 
+export interface SalesInterface{
+  id: number,
+
+
+
+}
+
 export interface Batch {
   id: string;
   name: string;
-  batchPrice: number;
-  booksPrice: number;
+  price: number;
+  book_price: number;
   status: 'active' | 'completed';
   createdAt: string;
   updatedAt: string;

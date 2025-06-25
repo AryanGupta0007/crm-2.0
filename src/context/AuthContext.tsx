@@ -49,11 +49,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       const res = await response.json();
       setUser(res.user);
-      setToken(res.token);
+      setToken(res.token.access);
       // console.log(res)
       
       localStorage.setItem('userType', res.emp.type);
-      localStorage.setItem('accessToken', res.token);
+      localStorage.setItem('accessToken', res.token.access);
     } catch (err: any) {
       setError(err.message);
       throw err;
@@ -77,10 +77,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       const res = await response.json();
       setUser(res.user);
-      setToken(res.token);
+      setToken(res.token.access);
       
       console.log(res)
-      localStorage.setItem('accessToken', res.token);
+      localStorage.setItem('accessToken', res.token.access);
       localStorage.setItem('userType', res.emp.type);
     } catch (err: any) {
       setError(err.message);

@@ -82,8 +82,8 @@ export const BatchManagement = ({ batches, onAddBatch }: BatchManagementProps) =
               {activeBatches.map((batch) => (
                 <tr key={batch.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-3 px-4 font-medium">{batch.name}</td>
-                  <td className="py-3 px-4">₹{batch.batchPrice.toLocaleString()}</td>
-                  <td className="py-3 px-4">₹{batch.booksPrice.toLocaleString()}</td>
+                  <td className="py-3 px-4">₹{batch.price.toLocaleString()}</td>
+                  <td className="py-3 px-4">₹{batch.book_price.toLocaleString()}</td>
                   <td className="py-3 px-4">
                     <Button size="sm" variant="outline">
                       <Archive size={14} className="mr-2" />
@@ -114,8 +114,8 @@ export const BatchManagement = ({ batches, onAddBatch }: BatchManagementProps) =
               {completedBatches.map((batch) => (
                 <tr key={batch.id} className="border-b border-gray-100">
                   <td className="py-3 px-4 font-medium">{batch.name}</td>
-                  <td className="py-3 px-4">₹{batch.batchPrice.toLocaleString()}</td>
-                  <td className="py-3 px-4">₹{batch.booksPrice.toLocaleString()}</td>
+                  <td className="py-3 px-4">₹{batch.price.toLocaleString()}</td>
+                  <td className="py-3 px-4">₹{batch.book_price.toLocaleString()}</td>
                   <td className="py-3 px-4">
                     <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                       Completed

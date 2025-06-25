@@ -16,7 +16,10 @@ export const BatchesProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const fetchBatches = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/gen/batches');
+      const token = localStorage.getItem('accessToken');
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch('http://localhost:8000/api/gen/batches', { headers });
       if (res.ok) {
         const data = await res.json();
         setBatches(data.batches);
