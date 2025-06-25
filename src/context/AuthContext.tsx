@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface User {
   id?: number;
@@ -34,6 +34,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Hydrate user from localStorage on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
@@ -50,10 +58,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const res = await response.json();
       setUser(res.user);
       setToken(res.token.access);
-      // console.log(res)
-      
       localStorage.setItem('userType', res.emp.type);
       localStorage.setItem('accessToken', res.token.access);
+      localStorage.setItem('user', JSON.stringify(res.user)); // Persist user
     } catch (err: any) {
       setError(err.message);
       throw err;
@@ -78,10 +85,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const res = await response.json();
       setUser(res.user);
       setToken(res.token.access);
-      
-      console.log(res)
       localStorage.setItem('accessToken', res.token.access);
       localStorage.setItem('userType', res.emp.type);
+      localStorage.setItem('user', JSON.stringify(res.user)); // Persist user after signup
     } catch (err: any) {
       setError(err.message);
       throw err;
@@ -95,6 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(null);
     localStorage.removeItem('accessToken');
     localStorage.removeItem('userType');
+    localStorage.removeItem('user'); // Remove user
   };
 
   return (

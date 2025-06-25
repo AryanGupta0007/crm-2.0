@@ -64,17 +64,14 @@ export interface DemoAccount {
 }
 
 export interface DashboardStats {
-  totalLeads: number;
-  activeLeads: number;
-  convertedLeads: number;
-  dnpLeads: number;
+  total_leads: number;
+  active_leads: number;
+  converted_leads: number;
+  dnp_leads: number;
 }
 
 export interface SalesInterface{
   id: number,
-
-
-
 }
 
 export interface Batch {

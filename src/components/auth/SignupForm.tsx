@@ -4,6 +4,7 @@ import { User, Mail, Phone, Lock, Eye, EyeOff, UserPlus } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface SignupFormProps {
   onSuccess: () => void;
@@ -22,6 +23,7 @@ export const SignupForm = ({ onSuccess, onSwitchToLogin }: SignupFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { register, loading, error } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +43,7 @@ export const SignupForm = ({ onSuccess, onSwitchToLogin }: SignupFormProps) => {
         contact: formData.phone,
         type: formData.role,
       });
-      onSuccess();
+      navigate('/login');
     } catch (err) {
       // error is handled by AuthContext
     }

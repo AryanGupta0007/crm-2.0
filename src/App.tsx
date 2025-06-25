@@ -81,7 +81,7 @@ function App() {
     }
 
     // Special case: accounts user only sees accounts dashboard
-    if (user.email === 'accounts@buddingmariners.com') {
+    if (localStorage.getItem('userType') === 'accounts') {
       return <AccountsDashboard />;
     }
 
@@ -92,7 +92,8 @@ function App() {
         return <AdminDashboard />;
       case '/accounts':
         // Allow admin to view AccountsDashboard
-        if (user.type === 'admin') {
+        
+        if (localStorage.getItem('userType') === 'admin') {
           return <AccountsDashboard />;
         }
         // For any other type, redirect to home/landing

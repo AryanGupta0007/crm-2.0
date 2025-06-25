@@ -18,11 +18,11 @@ export const AccountsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       const token = localStorage.getItem('accessToken');
       const headers: HeadersInit = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `bearer ${token}`;
+      if (token) headers['Authorization'] = `${token}`;
       const res = await fetch('http://localhost:8000/api/gen/under-review-leads/', { headers });
       if (res.ok) {
         const data = await res.json();
-        setAccounts(data.accounts);
+        setAccounts(data.leads);
       }
     } catch (err) {
       // handle error

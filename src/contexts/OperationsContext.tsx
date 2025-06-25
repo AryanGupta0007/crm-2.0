@@ -27,15 +27,19 @@ export const OperationsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const fetchWithAuth = async (url: string) => {
     const token = localStorage.getItem('accessToken');
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (token) headers['Authorization'] = `${token}`;
     const res = await fetch(url, { headers });
     if (!res.ok) throw new Error('Failed to fetch ' + url);
     return res.json();
   };
+  
+  const updateOperationsStatus = useCallBack(async () => {
+    const data = await fetchWithAuth('http://localhost:8000/api/')
+  })
 
   const fetchAccounts = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/admin/leads/');
-    setAccounts(data);
+    const data = await fetchWithAuth('http://localhost:8000/api/gen/under-review-leads/');
+    setAccounts(data.leads);
   }, []);
 
   const fetchUsers = useCallback(async () => {

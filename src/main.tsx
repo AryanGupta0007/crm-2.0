@@ -9,6 +9,7 @@ import { UsersProvider } from './contexts/UsersContext';
 import { DashboardStatsProvider } from './contexts/DashboardStatsContext';
 import { AuthProvider } from './context/AuthContext';
 import { AdminProvider } from './contexts/AdminContext.tsx';
+import { BrowserRouter } from 'react-router-dom';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AdminProvider>
@@ -18,7 +19,9 @@ createRoot(document.getElementById('root')!).render(
           <BatchesProvider>
             <UsersProvider>
               <DashboardStatsProvider>
-                <App />
+                <BrowserRouter>
+                  <App />
+                </BrowserRouter>
               </DashboardStatsProvider>
             </UsersProvider>
           </BatchesProvider>

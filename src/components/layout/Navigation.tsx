@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Anchor, Users, BarChart3, CheckSquare, LogOut, DollarSign } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
+import { useNavigate } from 'react-router-dom';
 
 interface NavigationProps {
   currentPath: string;
@@ -12,11 +13,13 @@ interface NavigationProps {
 export const Navigation = ({ currentPath, onNavigate }: NavigationProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   if (!user) return null;
 
   const getNavItems = () => {
-    switch (user.type) {
+    console.log('nav', user)
+    switch (localStorage.getItem('userType')) {
       case 'admin':
         return [
           { path: '/admin', label: 'Dashboard', icon: BarChart3 },
@@ -121,7 +124,10 @@ export const Navigation = ({ currentPath, onNavigate }: NavigationProps) => {
               <div className="p-4 border-t border-gray-200">
                 <Button
                   variant="outline"
-                  onClick={logout}
+                  onClick={() => {
+                    logout();
+                    navigate('/login');
+                  }}
                   className="w-full"
                 >
                   <LogOut size={16} className="mr-2" />
@@ -177,7 +183,10 @@ export const Navigation = ({ currentPath, onNavigate }: NavigationProps) => {
           
           <Button
             variant="outline"
-            onClick={logout}
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
             className="w-full"
           >
             <LogOut size={16} className="mr-2" />

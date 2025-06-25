@@ -4,6 +4,7 @@ import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginFormProps {
   onSuccess: () => void;
@@ -15,12 +16,30 @@ export const LoginForm = ({ onSuccess, onSwitchToSignup }: LoginFormProps) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const { login, loading, error } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await login(email, password);
-      onSuccess();
+      // Determine user type from localStorage or context and navigate
+      const userType = localStorage.getItem('userType');
+      switch (userType) {
+        case 'accounts':
+          navigate('/accounts');
+          break;
+        case 'admin':
+          navigate('/admin');
+          break;
+        case 'sales':
+          navigate('/sales');
+          break;
+        case 'operations':
+          navigate('/operations');
+          break;
+        default:
+          navigate('/');
+      }
     } catch (err) {
       // error is handled by AuthContext
     }
