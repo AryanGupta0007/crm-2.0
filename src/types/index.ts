@@ -22,7 +22,7 @@ export interface Lead {
   books?: string;
   followUpDate?: string;
   comments: string[];
-  assignedTo?: string;
+  assigned_to: number;
   created_at: string;
   updatedAt: string;
 }

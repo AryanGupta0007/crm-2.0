@@ -14,6 +14,7 @@ interface AdminContextType {
   fetchDashboardStats: () => Promise<void>;
   createBatch: (batch: Partial<Batch>) => Promise<void>;
   updateLeadAssignedTo: (data: {userID: number, leadID: number}) => Promise<void>;
+  updateLeadStatus: (data: {status: string, leadID: number}) => Promise<void>;
 }
 
 export const AdminContext = createContext<AdminContextType>({
@@ -28,7 +29,8 @@ export const AdminContext = createContext<AdminContextType>({
   fetchAccounts: async () => {},
   fetchDashboardStats: async () => {},
   createBatch: async () => {},
-  updateLeadAssignedTo: async () => {}
+  updateLeadAssignedTo: async () => {},
+  updateLeadStatus: async() => {}
 });
 
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -72,7 +74,21 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         method: "PATCH",
         body: JSON.stringify(payload),
         });
+    await fetchLeads();
     }, [fetchLeads]) 
+
+
+const updateLeadStatus = useCallback(async (data: {status: string, leadID: number}) => {
+        const payload = {
+            'status': data.status,
+            'id': data.leadID
+        }
+        await fetchWithAuth('http://localhost:8000/api/admin/leads/', {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+            });
+        await fetchLeads();
+        }, [fetchLeads])     
 
   const fetchAccounts = useCallback(async () => {
     const data = await fetchWithAuth('http://localhost:8000/api/admin/leads/');
@@ -111,7 +127,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       fetchAccounts,
       fetchDashboardStats,
       createBatch,
-      updateLeadAssignedTo
+      updateLeadAssignedTo,
+      updateLeadStatus
     }}>
       {children}
     </AdminContext.Provider>

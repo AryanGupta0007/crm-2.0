@@ -9,7 +9,7 @@ import { Lead } from '../types';
 import { AdminContext } from '../contexts/AdminContext';
 
 export const AdminDashboard = () => {
-  const { leads, fetchLeads, batches, fetchBatches, updateLeadAssignedTo, dashboardStats, fetchDashboardStats, users, fetchUsers, createBatch } = useContext(AdminContext);
+  const { leads, fetchLeads, batches, fetchBatches, updateLeadAssignedTo, updateLeadStatus, dashboardStats, fetchDashboardStats, users, fetchUsers, createBatch } = useContext(AdminContext);
   const [activeTab, setActiveTab] = useState('overview');
   const [leadsToShow, setLeadsToShow] = useState(10);
   const [globalSearch, setGlobalSearch] = useState('');
@@ -448,6 +448,7 @@ export const AdminDashboard = () => {
                             value={lead.status}
                             onChange={(e) => {
                               // Handle status change
+                              updateLeadStatus({'status': e.target.value, leadID: Number(lead.id)}) ;
                               console.log('Status changed:', e.target.value);
                             }}
                           >
@@ -462,7 +463,7 @@ export const AdminDashboard = () => {
                         </td>
                         <td className="py-3 px-4">
                           <select
-                            value={lead.assignedTo || ''}
+                            value={lead.assigned_to || ''}
                             onChange={(e) => {
                               // Handle assignment change
                               updateLeadAssignedTo({ userID: Number(e.target.value), leadID: Number(lead.id) })
