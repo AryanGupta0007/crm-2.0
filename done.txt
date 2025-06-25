@@ -1,0 +1,84 @@
+**ADMIN**
+
+Implement a global search bar on the dashboard.
+Allow search by lead name, number, or source for quick access.
+
+Filter Options (Similar to Sales Dashboard)
+Add filters for:
+DNP (Do Not Pick)
+CTC (Could Not Connect)
+Last 10 Days Leads (recent activity view)
+
+Added a "Reset" button next to the "Needed Leads" count for each caller.
+Clicking "Reset" sets the needed leads count to 50 for that caller (demo logic).
+The UI updates immediately.
+
+Use a local leads state instead of sampleLeads for all lead operations.
+On file upload, if a duplicate (by phone/email) is found, assign it to the same caller and mark as "new".
+All lead table/filter logic now uses the updated leads state.
+You must implement actual file parsing to fill uploadedLeads for real uploads.
+
+The "Source" column is now "Source / Upload Date".
+The upload date (lead.createdAt) is shown next to the source for each lead, formatted as a local date.
+No other logic is changed.
+
+
+**Sales Dashboard**
+The comment input in the table view is now a multi-line <textarea>, resizable, with a minimum height for better usability.
+
+Leads are now always displayed in chronological order (oldest at top, newest at bottom) in both cards and table view.
+
+Total Leads Assigned (Daily Card)
+Add a card-style display showing:
+Total leads assigned today (Reset Each Day).
+
+Remove Edit Button
+Remove or disable the Edit button to prevent post-entry manipulation by sellers.
+
+
+Red Color for Fake Leads
+If a lead is marked as fake by the Accounts Team, color the lead row Red.
+Allow seller to re-upload proofs for re-verification if needed.
+
+When a lead is marked as "converted" (Close Success), set a new property opsVerified: false on the lead.
+Do not send it to Accounts until the Ops team verifies it.
+Show a visual indicator in the Sales dashboard that the lead is "Pending Ops Verification" after conversion.
+
+
+Show only leads with status === 'converted' and opsVerified === false for verification.
+After verification, set opsVerified: true (and only then should the lead be considered for Accounts).
+
+
+Discount Proof Submission
+If a discount is given to a student, seller must upload discount proof:
+Add a new section for this OR
+Allow as additional proof, like the "Old Student Proof" section.
+
+Flexible Proof Format (PDF/Image)
+Seller should be able to upload proof in:
+Image format (JPEG, PNG)
+OR a PDF file (for multiple payment screenshots compiled together)
+
+
+Show the date each lead is received from the seller.
+Display the seller’s name with each lead for easy identification.
+Add a real-time notification system:
+Notify OPS when a lead arrives.
+Notify A/C team for verification.
+Mark such leads as “Priority” for quick action.
+
+
+Show the date each lead/account was received.
+Display all uploaded proofs (payment, discount, books, form) as responsive images or PDF links.
+Add a "Mark as Fake" button for each account.
+On marking as fake, notify Seller & OPS (simulate with a notification banner).
+Allow re-upload of proofs for re-verification, with date tracking.
+Ensure images/PDFs are responsive for all screen sizes.
+Accounts and OPS can work in parallel on the same lead.
+
+
+
+
+
+
+
