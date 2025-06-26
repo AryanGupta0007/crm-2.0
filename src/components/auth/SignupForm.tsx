@@ -16,7 +16,7 @@ export const SignupForm = ({ onSuccess, onSwitchToLogin }: SignupFormProps) => {
     name: '',
     email: '',
     phone: '',
-    role: 'sales' as 'sales' | 'operations',
+    role: 'sales' as 'sales' | 'operations' | 'accounts',
     password: '',
     confirmPassword: ''
   });
@@ -118,6 +118,7 @@ export const SignupForm = ({ onSuccess, onSwitchToLogin }: SignupFormProps) => {
             >
               <option value="sales">Sales Representative</option>
               <option value="operations">Operations Manager</option>
+              <option value="accounts">Accounts Representative</option>
             </select>
           </div>
 

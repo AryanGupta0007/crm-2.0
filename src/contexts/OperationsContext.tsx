@@ -8,6 +8,7 @@ interface OperationsContextType {
   fetchLeads: () => Promise<void>;
   fetchUsers: () => Promise<void>;
   fetchBatches: () => Promise<void>;
+  handleMarkAsFake: (leadId: number) => Promise<void>;
 }
 
 export const OperationsContext = createContext<OperationsContextType>({
@@ -17,10 +18,11 @@ export const OperationsContext = createContext<OperationsContextType>({
   fetchLeads: async () => {},
   fetchUsers: async () => {},
   fetchBatches: async () => {},
+  handleMarkAsFake: async () => {}
 });
 
 export const OperationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [leads, setLeads] = useState<Account[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
   
@@ -33,6 +35,9 @@ export const OperationsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     return res.json();
   };
 
+  const handleMarkAsFake = async(leadId: number) => {
+
+  }
   // const updateOperationsStatus = useCallBack(async () => {
   //   const data = await fetchWithAuth('http://localhost:8000/api/')
   // })
