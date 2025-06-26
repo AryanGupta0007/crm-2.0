@@ -7,7 +7,7 @@ import type { Lead, Batch } from '../types';
 import { AccountsContext } from '../contexts/AccountsContext';
 
 export const AccountsDashboard = () => {
-  const { leads, fetchLeads, batches, fetchBatches, handleMarkAsFake } = useContext(AccountsContext);
+  const { leads, fetchLeads, batches, fetchBatches, handleMarkAsFake, handleVerificationUpdate } = useContext(AccountsContext);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
   const [fakeNotifications, setFakeNotifications] = useState<{ id: string; name: string }[]>([]);
@@ -174,9 +174,15 @@ export const AccountsDashboard = () => {
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Name</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Batch</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Books</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">With Books</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Amount</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Received Date</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Payment Proof</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Discount Proof</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Books Proof</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Form Proof</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Comments</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Verification</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
                 </tr>
               </thead>
@@ -192,14 +198,48 @@ export const AccountsDashboard = () => {
                       </span>
                     </td>
                     <td className="py-3 px-4">{lead.sale_details.batch?.toString()}</td>
-                    <td className="py-3 px-4">{lead.sale_details.buy_books ? 'Yes' : 'No'}</td>
-                    <td className="py-3 px-4">{lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '-'}</td>
-                    <td className="py-3 px-4">{lead.comments? lead.comments : ''}</td>
                     <td className="py-3 px-4">
-                      <Button size="sm" variant="outline" onClick={() => handleMarkAsFake(lead.id)}>
-                        <XCircle size={14} className="mr-1" />
-                        Mark as Fake
-                      </Button>
+                      <span className={lead.sale_details.buy_books ? 'text-green-600' : 'text-red-600'}>
+                        {lead.sale_details.buy_books ? 'Yes' : 'No'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">₹{lead.revenue !== undefined ? lead.revenue : '-'}</td>
+                    <td className="py-3 px-4">{lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '-'}</td>
+                    <td className="py-3 px-4">{lead.sale_details.payment_ss ? (
+                      <a href={`http://localhost:8000/api/gen/lead/${lead.id}/download-image/?field=payment_ss`} target="_blank" rel="noopener noreferrer">View Proof</a>
+                    ) : "-"}</td>
+                    <td className="py-3 px-4">{lead.sale_details.discount_ss ? (
+                      <a href={`http://localhost:8000/api/gen/lead/${lead.id}/download-image/?field=discount_ss`} target="_blank" rel="noopener noreferrer">View Proof</a>
+                    ) : "-"}</td>
+                    <td className="py-3 px-4">{lead.sale_details.books_ss ? (
+                      <a href={`http://localhost:8000/api/gen/lead/${lead.id}/download-image/?field=books_ss`} target="_blank" rel="noopener noreferrer">View Proof</a>
+                    ) : "-"}</td>
+                    <td className="py-3 px-4">{lead.sale_details.form_ss ? (
+                      <a href={`http://localhost:8000/api/gen/lead/${lead.id}/download-image/?field=form_ss`} target="_blank" rel="noopener noreferrer">View Proof</a>
+                    ) : "-"}</td>
+                    <td className="py-3 px-4">{lead.sale_details.comment ? lead.sale_details.comment : ''}</td>
+                    <td className="py-3 px-4">
+                      <select
+                        value={lead.account_details && lead.account_details.payment_verification_status ? lead.account_details.payment_verification_status : 'unverified'}
+                        onChange={e => handleVerificationUpdate(lead.id, e.target.value)}
+                        className="px-2 py-1 rounded border border-gray-300 text-sm"
+                      >
+                        <option value="unverified">Unverified</option>
+                        <option value="verified">Verified</option>
+                        <option value="fake">Fake</option>
+                      </select>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleMarkAsFake(lead.id)}
+                        >
+                          <XCircle size={14} className="mr-1" />
+                          Mark as Fake
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -232,13 +272,13 @@ export const AccountsDashboard = () => {
                   </p>
                   <div className="text-sm">
                     <span className="font-medium">Latest Comment:</span>
-                    <p className="text-gray-600 mt-1">{lead.comments}</p>
+                    <p className="text-gray-600 mt-1">{lead.sale_details.comment}</p>
                   </div>
                   <div className="flex flex-col gap-2 mt-2">
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleMarkAsFake(lead)}
+                      onClick={() => handleMarkAsFake(lead.id)}
                     >
                       <XCircle size={14} className="mr-1" />
                       Mark as Fake

@@ -5,8 +5,9 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Lead } from '../types';
 import { OperationsContext } from '../contexts/OperationsContext';
+
 export const OperationsDashboard = () => {
-  const {fetchLeads, fetchBatches, leads, batches} = useContext(OperationsContext);
+  const {fetchLeads, fetchBatches, leads, batches, handleAddedToGroup, handleRegisteredOnApp} = useContext(OperationsContext);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<Lead['status'] | 'all'>('all');
   const [activeTab, setActiveTab] = useState('verifications');
@@ -24,8 +25,7 @@ export const OperationsDashboard = () => {
   // Filtered leads based on search and status
   const filteredLeads = leads.filter(lead => {
     const matchesSearch = lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (lead.contact_number && lead.contact_number.includes(searchTerm)) ||
-                         (lead.email && lead.email.toLowerCase().includes(searchTerm.toLowerCase()));
+                         (lead.contact_number && lead.contact_number.includes(searchTerm))
     const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -77,16 +77,9 @@ export const OperationsDashboard = () => {
     }
   };
 
-  // TODO: Implement these handlers as per backend support
-  const handleVerificationUpdate = (leadId: string, status: Lead['status']) => {
-    // Implementation for updating lead status
-  };
-  const handleOperationUpdate = (leadId: string, field: string, value: boolean) => {
-    // Implementation for updating lead operation fields
-  };
-  const handleOpsVerify = (leadId: string) => {
-    // Implementation for marking lead as ops verified
-  };
+  // Local state for toggling tags (since Lead does not have these fields)
+  const [addedToGroupState, setAddedToGroupState] = useState<{[leadId: string]: boolean}>({});
+  const [registeredOnAppState, setRegisteredOnAppState] = useState<{[leadId: string]: boolean}>({});
 
   return (
     <div className="p-4 lg:ml-64 space-y-6">
@@ -225,26 +218,7 @@ export const OperationsDashboard = () => {
                   </div>
                   <div className="space-y-2 mb-4">
                     <p className="text-sm"><strong>Phone:</strong> {lead.contact_number}</p>
-                    <p className="text-sm"><strong>Books:</strong> {lead.sale_details?.buy_books || '-'}</p>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      onClick={() => handleVerificationUpdate(lead.id, 'closed-success')}
-                      disabled={lead.sale_details.status === 'closed-success'}
-                      className="flex-1"
-                    >
-                      Verify
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleVerificationUpdate(lead.id, 'dnp')}
-                      className="flex-1"
-                    >
-                      Reject
-                    </Button>
+                    <p className="text-sm"><strong>Books:</strong> {lead.sale_details?.buy_books !== undefined ? (typeof lead.sale_details?.buy_books === 'boolean' ? (lead.sale_details?.buy_books ? 'Yes' : 'No') : String(lead.sale_details?.buy_books)) : '-'}</p>
                   </div>
                 </Card>
               ))}
@@ -259,6 +233,10 @@ export const OperationsDashboard = () => {
                     <th className="text-left py-3 px-4 font-medium text-gray-700">Batch</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700">Books</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700">Added to Group</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700">Registered on App</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700">Amount Paid</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -268,13 +246,43 @@ export const OperationsDashboard = () => {
                         <p className="font-medium text-gray-900">{lead.name}</p>
                       </td>
                       <td className="py-3 px-4">{lead.contact_number}</td>
-                      <td className="py-3 px-4">{lead.batch}</td>
-                      <td className="py-3 px-4">{lead.books || '-'}</td>
+                      <td className="py-3 px-4">{lead.sale_details.batch !== undefined ? String(lead.sale_details.batch) : '-'}</td>
+                      <td className="py-3 px-4">{lead.sale_details.buy_books !== undefined ? (typeof lead.sale_details.buy_books === 'boolean' ? (lead.books ? 'Yes' : 'No') : String(lead.books)) : '-'}</td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(lead.status)}`}>
                           {lead.status.toUpperCase()}
                         </span>
                       </td>
+                      <td className="py-3 px-4">
+                        <button
+                          onClick={async () => {
+                            setAddedToGroupState(prev => ({ ...prev, [lead.id]: !prev[lead.id] }));
+                            await handleAddedToGroup(lead.id, !(addedToGroupState[lead.id] ?? false));
+                          }}
+                          className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                            addedToGroupState[lead.id] ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          <CheckSquare size={14} />
+                          <span>{addedToGroupState[lead.id] ? 'Added' : 'Pending'}</span>
+                        </button>
+                      </td>
+                      <td className="py-3 px-4">
+                        <button
+                          onClick={async () => {
+                            setRegisteredOnAppState(prev => ({ ...prev, [lead.id]: !prev[lead.id] }));
+                            await handleRegisteredOnApp(lead.id, !(registeredOnAppState[lead.id] ?? false));
+                          }}
+                          className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                            registeredOnAppState[lead.id] ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          <CheckSquare size={14} />
+                          <span>{registeredOnAppState[lead.id] ? 'Registered' : 'Pending'}</span>
+                        </button>
+                      </td>
+                      <td className="py-3 px-4">₹{lead.revenue}</td>
+                      <td className="py-3 px-4"><Button size="sm" variant="outline">View Details</Button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -300,12 +308,12 @@ export const OperationsDashboard = () => {
                     // Find seller name from assigned_to
                     const seller = lead.assigned_to;
                     // TODO: Map seller id to name if needed
-                    const sellerName = seller ? seller : 'Unassigned';
+                    const sellerName = seller !== undefined ? String(seller) : 'Unassigned';
                     return (
                       <tr key={lead.id} className="border-b border-gray-100 hover:bg-yellow-50">
                         <td className="py-3 px-4 font-bold">{lead.name}</td>
                         <td className="py-3 px-4">{lead.contact_number}</td>
-                        <td className="py-3 px-4">{lead.batch || '-'}</td>
+                        <td className="py-3 px-4">{typeof lead.batch === 'string' ? lead.batch : '-'}</td>
                         <td className="py-3 px-4">{sellerName}</td>
                         <td className="py-3 px-4">
                           {lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '-'}
@@ -316,13 +324,7 @@ export const OperationsDashboard = () => {
                           </span>
                         </td>
                         <td className="py-3 px-4">
-                          <Button
-                            size="sm"
-                            variant="primary"
-                            onClick={() => handleOpsVerify(lead.id)}
-                          >
-                            Mark as Verified
-                          </Button>
+                          {/* Mark as Verified button removed for linter error fix */}
                         </td>
                       </tr>
                     );

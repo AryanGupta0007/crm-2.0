@@ -8,7 +8,8 @@ interface AccountsContextType {
   fetchLeads: () => Promise<void>;
   fetchUsers: () => Promise<void>;
   fetchBatches: () => Promise<void>;
-  handleMarkAsFake: (leadId: number) => Promise<void>;
+  handleMarkAsFake: (leadId: string) => Promise<void>;
+  handleVerificationUpdate: (leadId: string, status: string) => Promise<void>;
 }
 
 export const AccountsContext = createContext<AccountsContextType>({
@@ -18,7 +19,8 @@ export const AccountsContext = createContext<AccountsContextType>({
   fetchLeads: async () => {},
   fetchUsers: async () => {},
   fetchBatches: async () => {},
-  handleMarkAsFake: async () => {}
+  handleMarkAsFake: async () => {},
+  handleVerificationUpdate: async () => {}
 });
 
 export const AccountsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -30,25 +32,12 @@ export const AccountsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     const token = localStorage.getItem('accessToken');
     const headers: HeadersInit = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-    if (token) headers['Authorization'] = `${token}`;
+    if (token) (headers as Record<string, string>)['Authorization'] = `${token}`;
     const res = await fetch(url, { ...options, headers });
     if (!res.ok) throw new Error('Failed to fetch ' + url);
     return res.json();
   };
-  
-  const handleMarkAsFake = useCallback(async (leadId: number) => {
-    console.log(leadId)
-    const payload = {
-        "id": leadId,
-        "payment_verification_status": "fake"
-    }
-    const data = await fetchWithAuth('http://localhost:8000/api/accounts/lead/', {
-      method: "PATCH",
-      body: JSON.stringify(payload)
-    });
-    console.log('leads fetched', data);
-    fetchLeads();
-  }, []);
+
 
   const fetchLeads = useCallback(async () => {
     try {
@@ -65,6 +54,37 @@ export const AccountsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, []);
 
+  
+  const handleMarkAsFake = useCallback(async (leadId: string) => {
+    console.log(leadId)
+    const payload = {
+        "id": leadId,
+        "payment_verification_status": "fake"
+    }
+    const data = await fetchWithAuth('http://localhost:8000/api/accounts/lead/', {
+      method: "PATCH",
+      body: JSON.stringify(payload)
+    });
+    console.log('leads fetched', data);
+    fetchLeads();
+  }, []);
+
+  const handleVerificationUpdate = useCallback(async (leadId: string, status: string) => {
+    console.log(leadId)
+    const payload = {
+        "id": leadId,
+        "payment_verification_status": status
+    }
+    const data = await fetchWithAuth('http://localhost:8000/api/accounts/lead/', {
+      method: "PATCH",
+      body: JSON.stringify(payload)
+    });
+    console.log('leads fetched', data);
+    fetchLeads();
+  }, []);
+
+
+
   const fetchUsers = useCallback(async () => {
     const data = await fetchWithAuth('http://localhost:8000/api/gen/current-user/');
     console.log('fetched user, ', data)
@@ -79,7 +99,7 @@ export const AccountsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
 
   return (
-    <AccountsContext.Provider value={{ leads, fetchLeads, batches, fetchBatches, users, fetchUsers, handleMarkAsFake }}>
+    <AccountsContext.Provider value={{ leads, fetchLeads, batches, fetchBatches, users, fetchUsers, handleMarkAsFake, handleVerificationUpdate }}>
       {children}
     </AccountsContext.Provider>
   );

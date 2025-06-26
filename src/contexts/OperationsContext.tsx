@@ -8,7 +8,8 @@ interface OperationsContextType {
   fetchLeads: () => Promise<void>;
   fetchUsers: () => Promise<void>;
   fetchBatches: () => Promise<void>;
-  handleMarkAsFake: (leadId: number) => Promise<void>;
+  handleAddedToGroup: (leadId: string, added: boolean) => Promise<void>;
+  handleRegisteredOnApp: (leadId: string, registered: boolean) => Promise<void>;
 }
 
 export const OperationsContext = createContext<OperationsContextType>({
@@ -18,7 +19,8 @@ export const OperationsContext = createContext<OperationsContextType>({
   fetchLeads: async () => {},
   fetchUsers: async () => {},
   fetchBatches: async () => {},
-  handleMarkAsFake: async () => {}
+  handleAddedToGroup: async () => {},
+  handleRegisteredOnApp: async () => {},
 });
 
 export const OperationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -35,9 +37,6 @@ export const OperationsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     return res.json();
   };
 
-  const handleMarkAsFake = async(leadId: number) => {
-
-  }
   // const updateOperationsStatus = useCallBack(async () => {
   //   const data = await fetchWithAuth('http://localhost:8000/api/')
   // })
@@ -60,6 +59,30 @@ export const OperationsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setBatches(data.batches);
   }, []);
 
+  const handleAddedToGroup = useCallback(async (leadId: string, added: boolean) => {
+    const payload = {
+      id: leadId,
+      added_to_group: added
+    };
+    await fetchWithAuth('http://localhost:8000/api/ops/lead/', {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+    await fetchLeads();
+  }, [fetchLeads]);
+
+  const handleRegisteredOnApp = useCallback(async (leadId: string, registered: boolean) => {
+    const payload = {
+      id: leadId,
+      registered_on_app: registered
+    };
+    await fetchWithAuth('http://localhost:8000/api/ops/lead/', {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+    await fetchLeads();
+  }, [fetchLeads]);
+
   return (
     <OperationsContext.Provider value={{
       leads,
@@ -68,6 +91,8 @@ export const OperationsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       fetchLeads,
       fetchUsers,
       fetchBatches,
+      handleAddedToGroup,
+      handleRegisteredOnApp,
     }}>
       {children}
     </OperationsContext.Provider>

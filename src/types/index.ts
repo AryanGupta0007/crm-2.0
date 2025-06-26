@@ -16,19 +16,18 @@ export interface Lead {
   source: string;
   status: 'new' | 'pick' | 'dnp' | 'contacted' | 'closed-success' | 'under-review' | 'delete' | 'interested' | 'converted';
   board_score: {
-    pcm_score: Number;
-    english_score: Number;
+    pcm_score: string;
+    english_score: string;
   };
-  batch?: string;
-  books?: string;
-  followUpDate?: string;
-  comments: string[];
+  revenue: number;
   assigned_to: number;
   created_at: string;
   sale_details: {
     status: 'under-review' | 'interested' | 'closed-success',
     batch: Number,
-    buy_books: Boolean
+    buy_books: Boolean,
+    followUpDate: string,
+    comment: string
   };
   account_details: {
     payment_verification_status: string

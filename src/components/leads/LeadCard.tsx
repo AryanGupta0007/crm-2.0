@@ -54,10 +54,10 @@ export const LeadCard = ({ lead, onStatusUpdate, onAddComment }: LeadCardProps) 
           <Mail size={14} />
           <span>{lead.source}</span>
         </div>
-        {lead.followUpDate && (
+        {lead.sale_details.followUpDate && (
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <Calendar size={14} />
-            <span>Follow up: {format(new Date(lead.followUpDate), 'MMM dd, yyyy')}</span>
+            <span>Follow up: {format(new Date(lead.sale_details.followUpDate), 'MMM dd, yyyy')}</span>
           </div>
         )}
       </div>
@@ -66,10 +66,10 @@ export const LeadCard = ({ lead, onStatusUpdate, onAddComment }: LeadCardProps) 
         <p className="text-sm font-medium text-gray-700">Academics:</p>
         <div className="flex flex-wrap gap-2">
           <span className={`px-2 py-1 rounded-full text-xs ${lead.board_score.pcm_score ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-            PCM: {lead.board_score.pcm_score ? 'Yes' : 'Null'}
+            PCM: {lead.board_score.pcm_score ? lead.board_score.pcm_score : 'Null'}
           </span>
           <span className={`px-2 py-1 rounded-full text-xs ${lead.board_score.english_score ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-            English: {lead.board_score.english_score ? 'Yes' : 'Null'}
+            English: {lead.board_score.english_score ? lead.board_score.english_score : 'Null'}
           </span>
         </div>
       </div>
@@ -81,14 +81,14 @@ export const LeadCard = ({ lead, onStatusUpdate, onAddComment }: LeadCardProps) 
         </div>
       )}
 
-      {lead.comments  && (
+      {lead.sale_details.comment && (
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <MessageSquare size={14} className="text-gray-500" />
             <p className="text-sm font-medium text-gray-700">Latest Comment:</p>
           </div>
           <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
-            {lead.comments[lead.comments.length - 1]}
+            {lead.sale_details.comment}
           </p>
         </div>
       )}

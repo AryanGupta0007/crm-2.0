@@ -3,15 +3,40 @@ import { motion } from 'framer-motion';
 import { Search, Phone } from 'lucide-react';
 import { LeadCard } from '../components/leads/LeadCard';
 import { Button } from '../components/ui/Button';
-import { Lead } from '../types';
+import { Lead, Batch } from '../types';
 import { format } from 'date-fns';
 import { SalesContext } from '../contexts/SalesContext';
+import { useRef } from 'react';
 
 export const SalesDashboard = () => {
-  const { leads, fetchLeads, batches, fetchBatches, updateLead, handleAddComment, fetchUsers, users,  handleStatusUpdate } = useContext(SalesContext);
+  const {
+    leads,
+    fetchLeads,
+    batches,
+    fetchBatches,
+    updateLead,
+    handleAddComment,
+    handleStatusUpdate,
+    uploadSaleProofs,
+    fetchUsers,
+    users,
+    handleSaleStatusUpdate,
+    handleBatchUpdate,
+    handleEnglishScoreUpdate,
+    handlePCMScoreUpdate,
+    handleBookUpdate,
+    handlefollowUpUpdate
+  } = useContext(SalesContext);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<Lead['status'] | 'all'>('all');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [imageInputs, setImageInputs] = useState<{[leadId: string]: (File | null)[]}>({});
+  const [uploading, setUploading] = useState<{[key: string]: boolean}>({});
+  const [uploadSuccess, setUploadSuccess] = useState<{[key: string]: boolean}>({});
+  const [commentEdits, setCommentEdits] = useState<{[leadId: string]: string | undefined}>({});
+  const [commentSaving, setCommentSaving] = useState<{[leadId: string]: boolean}>({});
+
+  const proofColumns = ['payment_proof', 'discount_proof', 'books_proof', 'form_proof'];
 
   useEffect(() => {
     fetchUsers();
@@ -54,11 +79,51 @@ export const SalesDashboard = () => {
   const isFakeLead = (lead: Lead) => {
     return (
       (lead as any).verification === 'fake' ||
-      (lead.comments && lead.comments.some(c => typeof c === 'string' && c.toLowerCase().includes('fake')))
+      (lead.sale_details.comments && lead.sale_details.comments.toLowerCase().includes('fake'))
     );
   };
 
   const isPendingOps = (lead: Lead) => lead.status === 'converted' && (lead as any).opsVerified === false;
+
+  const handleImageInputChange = (leadId: string, idx: number, file: File | null) => {
+    setImageInputs(prev => ({
+      ...prev,
+      [leadId]: prev[leadId]
+        ? prev[leadId].map((f, i) => (i === idx ? file : f))
+        : Array(4).fill(null).map((f, i) => (i === idx ? file : null)),
+    }));
+
+    if (file) {
+      const proofType = proofColumns[idx];
+      setUploading(prev => ({ ...prev, [`${leadId}_${proofType}`]: true }));
+      uploadSaleProofs(leadId, file, proofType)
+        .then(() => {
+          setUploadSuccess(prev => ({ ...prev, [`${leadId}_${proofType}`]: true }));
+          setTimeout(() => setUploadSuccess(prev => ({ ...prev, [`${leadId}_${proofType}`]: false })), 2000);
+        })
+        .catch(() => {
+          setUploadSuccess(prev => ({ ...prev, [`${leadId}_${proofType}`]: false }));
+        })
+        .finally(() => {
+          setUploading(prev => ({ ...prev, [`${leadId}_${proofType}`]: false }));
+          setImageInputs(prev => ({
+            ...prev,
+            [leadId]: prev[leadId]
+              ? prev[leadId].map((f, i) => (i === idx ? null : f))
+              : Array(4).fill(null),
+          }));
+        });
+    }
+  };
+
+  // Helper to update a single lead's comment in the leads array
+  const updateLeadCommentLocally = (leadId: string, comment: string) => {
+    setCommentEdits(prev => {
+      const newEdits = { ...prev };
+      delete newEdits[leadId];
+      return newEdits;
+    });
+  };
 
   return (
     <div className="p-4 lg:ml-64 space-y-6">
@@ -194,42 +259,185 @@ export const SalesDashboard = () => {
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Lead Details</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Contact</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Source</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Last Update</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Score</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Batch</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Books</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Follow Up</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Comments</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Sales Status</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredLeads.map(lead => (
-                  <tr key={lead.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4">
-                      <p className="font-medium text-gray-900">{lead.name}</p>
-                      <p className="text-sm text-gray-500">{lead.source}</p>
-                    </td>
-                    <td className="py-3 px-4">
-                      <p className="text-sm text-gray-800">{lead.contact_number}</p>
-                      <p className="text-sm text-gray-500">{lead.email}</p>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
-                          lead.sale_details.status
-                        )}`}
-                      >
-                        {lead.sale_details.status.replace('_', ' ').toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">
-                      {format(new Date(lead.updated_at), 'MMM dd, hh:mm a')}
-                    </td>
-                    <td className="py-3 px-4">
-                      <a href={`tel:${lead.contact_number}`}>
-                        <Button variant="outline" size="sm">
-                          <Phone size={14} className="mr-2" /> Call
+                {filteredLeads.map((lead) => (
+                  <>
+                    <tr
+                      key={lead.id}
+                      className={`border-b border-gray-100 hover:bg-gray-50`}
+                    >
+                      <td className="py-3 px-4">
+                        <p className="font-medium text-gray-900">{lead.name}</p>
+                      </td>
+                      <td className="py-3 px-4">{lead.contact_number}</td>
+                      <td className="py-3 px-4">{lead.source}</td>
+                      <td className="py-3 px-4">
+                        <select
+                          className="text-sm border rounded p-1.5 w-full bg-green-100"
+                          value={lead.status}
+                          onChange={e => handleSaleStatusUpdate(lead.id, e.target.value as Lead['status'])}
+                        >
+                          <option value="new">NEW</option>
+                          <option value="pick">PICK</option>
+                          <option value="dnp">DNP</option>
+                          <option value="contacted">CTC</option>
+                          <option value="callback">CB</option>
+                          <option value="not_interested">NA</option>
+                          <option value="converted">CLOSED SUCCESS</option>
+                          <option value="under_review">UNDER REVIEW</option>
+                        </select>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex flex-col gap-2">
+                          <select
+                            className="text-sm border rounded p-1.5 w-full bg-green-100"
+                            value={lead.board_score.pcm_score?.toString() || ''}
+                            onChange={e => handlePCMScoreUpdate(lead.id, e.target.value)}
+                          >
+                            <option value="">PCM Score</option>
+                            <option value="{'<60'}">{'<60'}</option>
+                            <option value="{'60 AND <65'}">{'60 AND <65'}</option>
+                            <option value="{'65 AND <70'}">{'65 AND <70'}</option>
+                            <option value="{'70 AND <80'}">{'70 AND <80'}</option>
+                            <option value="{'80 AND <90'}">{'80 AND <90'}</option>
+                            <option value=">90">{'>'}90</option>
+                          </select>
+                          <select
+                            className="text-sm border rounded p-1.5 w-full bg-green-100"
+                            value={lead.board_score.english_score?.toString() || ''}
+                            onChange={e => handleEnglishScoreUpdate(lead.id, e.target.value)}
+                          >
+                            <option value="">English Score</option>
+                            <option value="{'<60'}">{'<60'}</option>
+                            <option value="{'60 AND <65'}">{'60 AND <65'}</option>
+                            <option value="{'65 AND <70'}">{'65 AND <70'}</option>
+                            <option value="{'70 AND <80'}">{'70 AND <80'}</option>
+                            <option value="{'80 AND <90'}">{'80 AND <90'}</option>
+                            <option value=">90">{'>'}90</option>
+                          </select>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <select
+                          className="text-sm border rounded p-1.5 w-full bg-green-100"
+                          value={lead.batch || ''}
+                          onChange={e => handleBatchUpdate(lead.id, e.target.value)}
+                        >
+                          <option value="">Select Batch</option>
+                          {batches.map((batch) => (
+                            <option key={batch.id} value={batch.id}>{batch.name}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="py-3 px-4">
+                        <input
+                          type="checkbox"
+                          className="form-checkbox h-5 w-5 text-green-600"
+                          checked={Boolean(lead.sale_details.buy_books)}
+                          onChange={e => handleBookUpdate(lead.id, e.target.checked)}
+                        />
+                      </td>
+                      <td className="py-3 px-4">
+                        <input
+                          type="date"
+                          className="text-sm border rounded p-1.5 w-full bg-green-100"
+                          value={lead.sale_details.followUpDate ? new Date(lead.sale_details.followUpDate).toISOString().split('T')[0] : ''}
+                          onChange={e => handlefollowUpUpdate(lead.id, e.target.value)}
+                        />
+                      </td>
+                      <td className="py-3 px-4">
+                        <textarea
+                          className="text-sm border rounded p-1.5 w-full bg-green-100 resize-y min-h-[60px]"
+                          value={commentEdits[lead.id] !== undefined ? commentEdits[lead.id] : (lead.sale_details.comment || '')}
+                          placeholder="Add comment"
+                          rows={3}
+                          onChange={e => setCommentEdits(prev => ({ ...prev, [lead.id]: e.target.value }))}
+                        />
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          className="mt-2"
+                          disabled={commentSaving[lead.id]}
+                          onClick={async () => {
+                            setCommentSaving(prev => ({ ...prev, [lead.id]: true }));
+                            await handleAddComment(lead.id, commentEdits[lead.id] || '');
+                            updateLeadCommentLocally(lead.id, commentEdits[lead.id] || '');
+                            setCommentSaving(prev => ({ ...prev, [lead.id]: false }));
+                          }}
+                        >
+                          {commentSaving[lead.id] ? 'Saving...' : 'Save'}
                         </Button>
-                      </a>
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="py-3 px-4">
+                        <select
+                          className="text-sm border rounded p-1.5 w-full bg-green-100"
+                          value={lead.sale_details.status}
+                          onChange={e => handleStatusUpdate(lead.id, e.target.value as Lead['status'])}
+                        >
+                          <option value="new">NEW</option>
+                          <option value="pick">PICK</option>
+                          <option value="dnp">DNP</option>
+                          <option value="contacted">CTC</option>
+                          <option value="callback">CB</option>
+                          <option value="not_interested">NA</option>
+                          <option value="converted">CLOSED SUCCESS</option>
+                          <option value="under_review">UNDER REVIEW</option>
+                        </select>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex space-x-2 items-center">
+                          <a href={`tel:${lead.contact_number}`}>
+                            <Button size="sm" variant="outline">
+                              <Phone size={14} />
+                            </Button>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                    {lead.sale_details.status === 'closed-success' && (
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        <td colSpan={11} className="py-4 px-4">
+                          <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
+                            {['Payment Proof', 'Discount Proof', 'Books Proof', 'Form Proof'].map((label, idx) => (
+                              <div key={label} className="flex flex-col items-center">
+                                <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={e => handleImageInputChange(lead.id, idx, e.target.files?.[0] || null)}
+                                  className="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-maritime-50 file:text-maritime-700 hover:file:bg-maritime-100"
+                                />
+                                {uploading[`${lead.id}_${proofColumns[idx]}`] && (
+                                  <span className="text-xs text-blue-500 mt-1">Uploading...</span>
+                                )}
+                                {uploadSuccess[`${lead.id}_${proofColumns[idx]}`] && (
+                                  <span className="text-xs text-green-600 mt-1">Uploaded!</span>
+                                )}
+                                {imageInputs[lead.id]?.[idx] instanceof File && (
+                                  <img
+                                    src={URL.createObjectURL(imageInputs[lead.id][idx] as File)}
+                                    alt={`Preview ${label}`}
+                                    className="mt-2 rounded shadow border max-h-24"
+                                  />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
                 ))}
               </tbody>
             </table>
