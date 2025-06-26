@@ -2,7 +2,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  employee_details: Object;
+  employee_details: {
+    type: 'sales' | 'admin' | 'operations' | 'accounts';
+  };
   avatar?: string;
 }
 

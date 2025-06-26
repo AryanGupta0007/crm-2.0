@@ -6,12 +6,9 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Lead } from '../types';
 import { format } from 'date-fns';
-import { LeadsContext } from '../contexts/LeadsContext';
-import { BatchesContext } from '../contexts/BatchesContext';
-
+import { SalesContext } from '../contexts/SalesContext';
 export const SalesDashboard = () => {
-  const { leads, fetchLeads } = useContext(LeadsContext);
-  const { batches, fetchBatches } = useContext(BatchesContext);
+  const { leads, fetchLeads, batches, fetchBatches} = useContext(SalesContext);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<Lead['status'] | 'all'>('all');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
@@ -19,40 +16,42 @@ export const SalesDashboard = () => {
   const [discountProofs, setDiscountProofs] = useState<{ [leadId: string]: File | null }>({});
 
   useEffect(() => {
+    console.log('fetching sales leads');
     fetchLeads();
+    console.log(leads);
     fetchBatches();
   }, [fetchLeads, fetchBatches]);
 
   // Sort leads by createdAt ascending so new leads appear at the bottom
   const sortedLeads = [...leads].sort((a, b) => {
-    const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-    const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    const aDate = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const bDate = b.created_at ? new Date(b.created_at).getTime() : 0;
     return aDate - bDate;
   });
 
   const filteredLeads = sortedLeads.filter(lead => {
     const matchesSearch = lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         lead.phone.includes(searchTerm) ||
+                         lead.contact_number.includes(searchTerm) ||
                          lead.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   // Update handleStatusUpdate to set opsVerified: false when converted
-  const handleStatusUpdate = (leadId: string, status: Lead['status']) => {
-    fetchLeads(prev =>
-      prev.map(lead =>
-        lead.id === leadId
-          ? {
-              ...lead,
-              status,
-              updatedAt: new Date().toISOString(),
-              ...(status === 'converted' ? { opsVerified: false } : {})
-            }
-          : lead
-      )
-    );
-  };
+  // const handleStatusUpdate = (leadId: string, status: Lead['status']) => {
+  //   fetchLeads(prev =>
+  //     prev.map(lead =>
+  //       lead.id === leadId
+  //         ? {
+  //             ...lead,
+  //             status,
+  //             updatedAt: new Date().toISOString(),
+  //             ...(status === 'converted' ? { opsVerified: false } : {})
+  //           }
+  //         : lead
+  //     )
+  //   );
+  // };
 
   const handleAddComment = (leadId: string, comment: string) => {
     fetchLeads(prev => prev.map(lead => 

@@ -69,22 +69,22 @@ export const AdminDashboard = () => {
       const updatedLeads = [...leads];
       uploadedLeads.forEach(uploadedLead => {
         const existing = leads.find(
-          l => l.phone === uploadedLead.phone || l.email === uploadedLead.email
+          l => l.contact_number === uploadedLead.contact_number || l.email === uploadedLead.email
         );
         if (existing) {
           // Duplicate found: assign to same caller, mark as new
           updatedLeads.push({
             ...uploadedLead,
-            assignedTo: existing.assignedTo,
+            assigned_to: existing.assigned_to,
             status: 'new',
-            createdAt: new Date().toISOString(),
+            created_at: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           });
         } else {
           // Not duplicate, add as is
           updatedLeads.push({
             ...uploadedLead,
-            createdAt: new Date().toISOString(),
+            created_at: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           });
         }
@@ -102,7 +102,7 @@ export const AdminDashboard = () => {
     }
     const results = leads.filter(lead =>
       lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.phone.includes(searchTerm) ||
+      lead.contact_number.includes(searchTerm) ||
       lead.source.toLowerCase().includes(searchTerm.toLowerCase())
     ).slice(0, 5);
     setSearchResults(results);
@@ -148,7 +148,7 @@ export const AdminDashboard = () => {
     if (leadStatusFilter === 'last10days') {
       const tenDaysAgo = new Date();
       tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
-      return new Date(lead.createdAt) >= tenDaysAgo;
+      return new Date(lead.created_at) >= tenDaysAgo;
     }
     return true;
   });
@@ -156,7 +156,7 @@ export const AdminDashboard = () => {
   // Helper to get needed leads for a caller
   const getNeededLeads = (callerId: string) => {
     if (callerNeededLeads[callerId] !== undefined) return callerNeededLeads[callerId];
-    return Math.max(0, 50 - leads.filter(l => l.assignedTo === callerId).length);
+    return Math.max(0, 50 - leads.filter(l => l.assigned_to === Number(callerId)).length);
   };
 
   // Handler to reset needed leads for a caller
@@ -236,7 +236,7 @@ export const AdminDashboard = () => {
                   >
                     <div className="font-medium text-gray-900">{lead.name}</div>
                     <div className="text-sm text-gray-600">
-                      {lead.phone} • {lead.source}
+                      {lead.contact_number} • {lead.source}
                     </div>
                   </div>
                 ))}
@@ -463,8 +463,9 @@ export const AdminDashboard = () => {
                         </td>
                         <td className="py-3 px-4">
                           <select
-                            value={lead.assigned_to || ''}
+                            value={lead.assigned_to?.id || ''}
                             onChange={(e) => {
+                              console.log(lead.assigned_to)
                               // Handle assignment change
                               updateLeadAssignedTo({ userID: Number(e.target.value), leadID: Number(lead.id) })
                               console.log('Assigned to:', e.target.value);
@@ -563,16 +564,16 @@ export const AdminDashboard = () => {
                         </div>
                       </td>
                       <td className="py-3 px-4">{caller.email}</td>
-                      <td className="py-3 px-4">{leads.filter(l => l.assignedTo === caller.id).length}</td>
+                      <td className="py-3 px-4">{leads.filter(l => l.assigned_to === Number(caller.id)).length}</td>
                       <td className="py-3 px-4">
-                        {leads.filter(l => l.assignedTo === caller.id && !['converted', 'dnp'].includes(l.status)).length}
+                        {leads.filter(l => l.assigned_to === Number(caller.id) && !['converted', 'dnp'].includes(l.status)).length}
                       </td>
                       <td className="py-3 px-4">
-                        {leads.filter(l => l.assignedTo === caller.id && l.status === 'converted').length}
+                        {leads.filter(l => l.assigned_to === Number(caller.id) && l.status === 'converted').length}
                       </td>
                       <td className="py-3 px-4">
                         <span className="font-medium text-green-600">
-                          ₹{(leads.filter(l => l.assignedTo === caller.id && l.status === 'converted').length * 50000).toLocaleString()}
+                          ₹{(leads.filter(l => l.assigned_to === Number(caller.id) && l.status === 'converted').length * 50000).toLocaleString()}
                         </span>
                       </td>
                       <td className="py-3 px-4">

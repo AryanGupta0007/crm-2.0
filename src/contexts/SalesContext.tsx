@@ -34,7 +34,7 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const fetchLeads = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/admin/leads/');
+    const data = await fetchWithAuth('http://localhost:8000/api/sales/leads/');
     setLeads(data);
   }, []);
 
@@ -44,7 +44,7 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const fetchBatches = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/admin/batch/');
+    const data = await fetchWithAuth('http://localhost:8000/api/gen/batch/');
     setBatches(data);
   }, []);
 

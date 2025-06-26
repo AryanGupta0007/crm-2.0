@@ -75,6 +75,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         body: JSON.stringify(payload),
         });
     await fetchLeads();
+    await fetchDashboardStats();
     }, [fetchLeads]) 
 
 
@@ -88,6 +89,7 @@ const updateLeadStatus = useCallback(async (data: {status: string, leadID: numbe
             body: JSON.stringify(payload),
             });
         await fetchLeads();
+        await fetchDashboardStats();
         }, [fetchLeads])     
 
   const fetchAccounts = useCallback(async () => {
