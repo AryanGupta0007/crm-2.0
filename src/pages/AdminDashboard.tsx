@@ -9,7 +9,7 @@ import { Lead } from '../types';
 import { AdminContext } from '../contexts/AdminContext';
 
 export const AdminDashboard = () => {
-  const { leads, fetchLeads, batches, fetchBatches, updateLeadAssignedTo, updateLeadStatus, dashboardStats, fetchDashboardStats, users, fetchUsers, createBatch, handleResetNeedeLeads } = useContext(AdminContext);
+  const { leads, fetchLeads, batches, fetchBatches, updateLeadAssignedTo, updateLeadStatus, dashboardStats, fetchDashboardStats, users, fetchUsers, createBatch, handleResetNeededLeads } = useContext(AdminContext);
   const [activeTab, setActiveTab] = useState('overview');
   const [leadsToShow, setLeadsToShow] = useState(10);
   const [globalSearch, setGlobalSearch] = useState('');

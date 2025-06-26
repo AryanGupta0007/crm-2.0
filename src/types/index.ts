@@ -25,7 +25,15 @@ export interface Lead {
   comments: string[];
   assigned_to: number;
   created_at: string;
-  updatedAt: string;
+  sale_details: {
+    status: 'under-review' | 'interested' | 'closed-success',
+    batch: Number,
+    buy_books: Boolean
+  };
+  account_details: {
+    payment_verification_status: string
+  }
+  updated_at: string;
 }
 
 export interface Account {
@@ -34,6 +42,7 @@ export interface Account {
   name: string;
   phone: string;
   email: string;
+  status: string;
   batch: string;
   books: string;
   amountPaid: number;

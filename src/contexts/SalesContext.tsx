@@ -9,7 +9,8 @@ interface SalesContextType {
   fetchUsers: () => Promise<void>;
   fetchBatches: () => Promise<void>;
   updateLead: (updatedLead: Lead) => void;
-  addCommentToLead: (leadId: string, comment: string) => void;
+  handleAddComment: (leadId: string, comment: string) => Promise<void>;
+  handleStatusUpdate: (leadId: string, status: string) => Promise<void>;
 }
 
 export const SalesContext = createContext<SalesContextType>({
@@ -20,19 +21,20 @@ export const SalesContext = createContext<SalesContextType>({
   fetchUsers: async () => {},
   fetchBatches: async () => {},
   updateLead: () => {},
-  addCommentToLead: () => {},
+  handleAddComment: async() => {}, 
+  handleStatusUpdate: async() => {}
 });
 
 export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
-
-  const fetchWithAuth = async (url: string) => {
+  
+  const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     const token = localStorage.getItem('accessToken');
-    const headers: HeadersInit = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `${token}`;
-    const res = await fetch(url, { headers });
+    const headers: HeadersInit = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+    if (token) (headers as Record<string, string>)['Authorization'] = `${token}`;
+    const res = await fetch(url, { ...options, headers });
     if (!res.ok) throw new Error('Failed to fetch ' + url);
     return res.json();
   };
@@ -59,33 +61,30 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setLeads(prevLeads => prevLeads.map(lead => lead.id === updatedLead.id ? updatedLead : lead));
   };
 
-  const addCommentToLead = (leadId: string, comment: string) => {
-    setLeads(prevLeads => prevLeads.map(lead =>
-      lead.id === leadId
-        ? { ...lead, comments: [...lead.comments, comment], updatedAt: new Date().toISOString() }
-        : lead
-    ));
-  };
-
-  const handleStatusUpdate = useCallback(async (data: {userID: number, leadID: number}) => {
+  const handleAddComment = useCallback(async (leadId: string, comment: string) => {
     const payload = {
-        'assigned_to': data.userID,
-        'id': data.leadID
+      'id': leadId,
+      'status': comment // This is updating status, not adding a comment.
+    };
+    await fetchWithAuth('http://localhost:8000/api/sales/leads/', {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+    });
+    await fetchLeads();
+  }, [fetchLeads]);
+
+
+  const handleStatusUpdate = useCallback(async (leadId: string, status: string) => {
+    const payload = {
+        'id': leadId,
+        'status': status
     }
-    await fetchWithAuth('http://localhost:8000/api/admin/leads/', {
+    await fetchWithAuth('http://localhost:8000/api/sales/leads/', {
         method: "PATCH",
         body: JSON.stringify(payload),
         });
     await fetchLeads();
-    await fetchDashboardStats();
-    }, [fetchLeads]) 
-
-  };
-
-  const handleAddComment = (leadId: string, comment: string) => {
-    const data = addCommentToLead(leadId, comment);
-  };
-
+    }, [fetchLeads]);
 
   return (
     <SalesContext.Provider value={{
@@ -96,7 +95,8 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       fetchUsers,
       fetchBatches,
       updateLead,
-      addCommentToLead,
+      handleAddComment,
+      handleStatusUpdate,
     }}>
       {children}
     </SalesContext.Provider>

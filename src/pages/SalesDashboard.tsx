@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { SalesContext } from '../contexts/SalesContext';
 
 export const SalesDashboard = () => {
-  const { leads, fetchLeads, batches, fetchBatches, updateLead, addCommentToLead, fetchUsers, users } = useContext(SalesContext);
+  const { leads, fetchLeads, batches, fetchBatches, updateLead, handleAddComment, fetchUsers, users,  handleStatusUpdate } = useContext(SalesContext);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<Lead['status'] | 'all'>('all');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
@@ -28,8 +28,7 @@ export const SalesDashboard = () => {
   const filteredLeads = sortedLeads.filter(lead => {
     const matchesSearch =
       lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.contact_number.includes(searchTerm) ||
-      lead.email.toLowerCase().includes(searchTerm.toLowerCase());
+      lead.contact_number.includes(searchTerm)
     const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -87,9 +86,9 @@ export const SalesDashboard = () => {
         </motion.div> */}
         {[
           { label: 'Total Leads', value: leads.length, color: 'text-blue-600' },
-          { label: 'Interested', value: leads.filter(l => l.status === 'interested').length, color: 'text-green-600' },
-          { label: 'Callbacks', value: leads.filter(l => l.status === 'callback').length, color: 'text-purple-600' },
-          { label: 'Converted', value: leads.filter(l => l.status === 'converted').length, color: 'text-emerald-600' },
+          { label: 'Interested', value: leads.filter(l => l.sale_details.status === 'interested').length, color: 'text-green-600' },
+          { label: 'Under Review', value: leads.filter(l => l.sale_details.status === 'under-review').length, color: 'text-purple-600' },
+          { label: 'Closed', value: leads.filter(l => l.sale_details.status === 'closed-success').length, color: 'text-emerald-600' },
         ].map((stat, index) => (
           <motion.div
             key={stat.label}
@@ -214,10 +213,10 @@ export const SalesDashboard = () => {
                     <td className="py-3 px-4">
                       <span
                         className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
-                          lead.status
+                          lead.sale_details.status
                         )}`}
                       >
-                        {lead.status.replace('_', ' ').toUpperCase()}
+                        {lead.sale_details.status.replace('_', ' ').toUpperCase()}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-sm text-gray-600">

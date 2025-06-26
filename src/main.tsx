@@ -11,8 +11,10 @@ import { AuthProvider } from './context/AuthContext';
 import { AdminProvider } from './contexts/AdminContext.tsx';
 import { BrowserRouter } from 'react-router-dom';
 import { SalesProvider } from './contexts/SalesContext.tsx';
+import { OperationsProvider } from './contexts/OperationsContext.tsx';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <OperationsProvider>
     <AdminProvider>
     <AuthProvider>
       <SalesProvider>
@@ -32,5 +34,6 @@ createRoot(document.getElementById('root')!).render(
       </SalesProvider>
     </AuthProvider>
     </AdminProvider>
+    </OperationsProvider>
   </StrictMode>
 );

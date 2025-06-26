@@ -1,63 +1,66 @@
 import React, { createContext, useState, useCallback } from 'react';
-import type { Account, User, Batch } from '../types';
+import type { Lead, User, Batch } from '../types';
 
 interface OperationsContextType {
-  accounts: Account[];
+  leads: Lead[];
   users: User[];
   batches: Batch[];
-  fetchAccounts: () => Promise<void>;
+  fetchLeads: () => Promise<void>;
   fetchUsers: () => Promise<void>;
   fetchBatches: () => Promise<void>;
 }
 
 export const OperationsContext = createContext<OperationsContextType>({
-  accounts: [],
+  leads: [],
   users: [],
   batches: [],
-  fetchAccounts: async () => {},
+  fetchLeads: async () => {},
   fetchUsers: async () => {},
   fetchBatches: async () => {},
 });
 
 export const OperationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [leads, setLeads] = useState<Account[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
-
-  const fetchWithAuth = async (url: string) => {
+  
+  const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     const token = localStorage.getItem('accessToken');
-    const headers: HeadersInit = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `${token}`;
-    const res = await fetch(url, { headers });
+    const headers: HeadersInit = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+    if (token) (headers as Record<string, string>)['Authorization'] = `${token}`;
+    const res = await fetch(url, { ...options, headers });
     if (!res.ok) throw new Error('Failed to fetch ' + url);
     return res.json();
   };
-  
-  const updateOperationsStatus = useCallBack(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/')
-  })
 
-  const fetchAccounts = useCallback(async () => {
+  // const updateOperationsStatus = useCallBack(async () => {
+  //   const data = await fetchWithAuth('http://localhost:8000/api/')
+  // })
+
+  const fetchLeads = useCallback(async () => {
     const data = await fetchWithAuth('http://localhost:8000/api/gen/under-review-leads/');
-    setAccounts(data.leads);
+    console.log('leads fetched', data);
+    setLeads(data.leads);
   }, []);
 
   const fetchUsers = useCallback(async () => {
     const data = await fetchWithAuth('http://localhost:8000/api/gen/current-user/');
+    console.log('fetched user, ', data)
     setUsers(Array.isArray(data) ? data : data ? [data] : []);
   }, []);
 
   const fetchBatches = useCallback(async () => {
     const data = await fetchWithAuth('http://localhost:8000/api/gen/batch/');
-    setBatches(data);
+    console.log('batches fetched', data);
+    setBatches(data.batches);
   }, []);
 
   return (
     <OperationsContext.Provider value={{
-      accounts,
+      leads,
       users,
       batches,
-      fetchAccounts,
+      fetchLeads,
       fetchUsers,
       fetchBatches,
     }}>
