@@ -171,7 +171,7 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         'id': leadId,
         'status': status
     }
-    await fetchWithAuth('http://localhost:8000/api/sales/leads/', {
+    await fetchWithAuth('http://localhost:8000/api/sales/lead/', {
         method: "PATCH",
         body: JSON.stringify(payload),
         });

@@ -286,7 +286,7 @@ export const SalesDashboard = () => {
                         <select
                           className="text-sm border rounded p-1.5 w-full bg-green-100"
                           value={lead.status}
-                          onChange={e => handleSaleStatusUpdate(lead.id, e.target.value as Lead['status'])}
+                          onChange={e => handleStatusUpdate(lead.id, e.target.value as Lead['status'])}
                         >
                           <option value="new">NEW</option>
                           <option value="pick">PICK</option>
@@ -331,7 +331,7 @@ export const SalesDashboard = () => {
                       <td className="py-3 px-4">
                         <select
                           className="text-sm border rounded p-1.5 w-full bg-green-100"
-                          value={lead.batch || ''}
+                          value={(lead.sale_details.batch) || ''}
                           onChange={e => handleBatchUpdate(lead.id, e.target.value)}
                         >
                           <option value="">Select Batch</option>
@@ -383,7 +383,7 @@ export const SalesDashboard = () => {
                         <select
                           className="text-sm border rounded p-1.5 w-full bg-green-100"
                           value={lead.sale_details.status}
-                          onChange={e => handleStatusUpdate(lead.id, e.target.value as Lead['status'])}
+                          onChange={e => handleSaleStatusUpdate(lead.id, e.target.value as Lead['status'])}
                         >
                           <option value="new">NEW</option>
                           <option value="pick">PICK</option>
