@@ -43,12 +43,12 @@ export const OperationsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, []);
 
   const fetchUsers = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/admin/employee/');
+    const data = await fetchWithAuth('http://localhost:8000/api/gen/current-user/');
     setUsers(Array.isArray(data) ? data : data ? [data] : []);
   }, []);
 
   const fetchBatches = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/admin/batch/');
+    const data = await fetchWithAuth('http://localhost:8000/api/gen/batch/');
     setBatches(data);
   }, []);
 

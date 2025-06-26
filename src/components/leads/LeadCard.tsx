@@ -48,11 +48,11 @@ export const LeadCard = ({ lead, onStatusUpdate, onAddComment }: LeadCardProps) 
       <div className="grid grid-cols-1 gap-3">
         <div className="flex items-center space-x-2 text-sm text-gray-600">
           <Phone size={14} />
-          <span>{lead.phone}</span>
+          <span>{lead.contact_number}</span>
         </div>
         <div className="flex items-center space-x-2 text-sm text-gray-600">
           <Mail size={14} />
-          <span>{lead.email}</span>
+          <span>{lead.source}</span>
         </div>
         {lead.followUpDate && (
           <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -65,14 +65,11 @@ export const LeadCard = ({ lead, onStatusUpdate, onAddComment }: LeadCardProps) 
       <div className="space-y-2">
         <p className="text-sm font-medium text-gray-700">Academics:</p>
         <div className="flex flex-wrap gap-2">
-          <span className={`px-2 py-1 rounded-full text-xs ${lead.academics.class12 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-            12th: {lead.academics.class12 ? 'Yes' : 'No'}
+          <span className={`px-2 py-1 rounded-full text-xs ${lead.board_score.pcm_score ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            PCM: {lead.board_score.pcm_score ? 'Yes' : 'Null'}
           </span>
-          <span className={`px-2 py-1 rounded-full text-xs ${lead.academics.pcm ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-            PCM: {lead.academics.pcm ? 'Yes' : 'No'}
-          </span>
-          <span className={`px-2 py-1 rounded-full text-xs ${lead.academics.english ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-            English: {lead.academics.english ? 'Yes' : 'No'}
+          <span className={`px-2 py-1 rounded-full text-xs ${lead.board_score.english_score ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            English: {lead.board_score.english_score ? 'Yes' : 'Null'}
           </span>
         </div>
       </div>
@@ -84,7 +81,7 @@ export const LeadCard = ({ lead, onStatusUpdate, onAddComment }: LeadCardProps) 
         </div>
       )}
 
-      {lead.comments.length > 0 && (
+      {lead.comments  && (
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <MessageSquare size={14} className="text-gray-500" />
@@ -108,18 +105,18 @@ export const LeadCard = ({ lead, onStatusUpdate, onAddComment }: LeadCardProps) 
         <Button
           size="sm"
           variant="outline"
-          onClick={() => onStatusUpdate(lead.id, 'callback')}
+          onClick={() => onStatusUpdate(lead.id, 'closed-success')}
           className="flex-1"
         >
-          Callback
+          Closed Success
         </Button>
         <Button
           size="sm"
           variant="ghost"
-          onClick={() => onStatusUpdate(lead.id, 'not_interested')}
+          onClick={() => onStatusUpdate(lead.id, 'under-review')}
           className="flex-1"
         >
-          Not Interested
+          Under Review
         </Button>
       </div>
     </motion.div>

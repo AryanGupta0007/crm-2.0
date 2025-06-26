@@ -15,6 +15,7 @@ interface AdminContextType {
   createBatch: (batch: Partial<Batch>) => Promise<void>;
   updateLeadAssignedTo: (data: {userID: number, leadID: number}) => Promise<void>;
   updateLeadStatus: (data: {status: string, leadID: number}) => Promise<void>;
+  handleResetNeededLeads: () => Promise<void>;
 }
 
 export const AdminContext = createContext<AdminContextType>({
@@ -30,7 +31,8 @@ export const AdminContext = createContext<AdminContextType>({
   fetchDashboardStats: async () => {},
   createBatch: async () => {},
   updateLeadAssignedTo: async () => {},
-  updateLeadStatus: async() => {}
+  updateLeadStatus: async() => {},
+  handleResetNeededLeads: async() => {}
 });
 
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -59,6 +61,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     console.log(data)
     setUsers(data.employees);
   }, []);
+
+  const handleResetNeededLeads = useCallback(async () => {
+    const data = await fetchWithAuth('http://localhost:8000/api/admin/reset-allot-leads/');
+    console.log(data)
+  }, [])
 
   const fetchBatches = useCallback(async () => {
     const data = await fetchWithAuth('http://localhost:8000/api/admin/batch/');
@@ -130,7 +137,8 @@ const updateLeadStatus = useCallback(async (data: {status: string, leadID: numbe
       fetchDashboardStats,
       createBatch,
       updateLeadAssignedTo,
-      updateLeadStatus
+      updateLeadStatus,
+      handleResetNeededLeads
     }}>
       {children}
     </AdminContext.Provider>

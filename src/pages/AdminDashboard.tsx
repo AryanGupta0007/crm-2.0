@@ -9,7 +9,7 @@ import { Lead } from '../types';
 import { AdminContext } from '../contexts/AdminContext';
 
 export const AdminDashboard = () => {
-  const { leads, fetchLeads, batches, fetchBatches, updateLeadAssignedTo, updateLeadStatus, dashboardStats, fetchDashboardStats, users, fetchUsers, createBatch } = useContext(AdminContext);
+  const { leads, fetchLeads, batches, fetchBatches, updateLeadAssignedTo, updateLeadStatus, dashboardStats, fetchDashboardStats, users, fetchUsers, createBatch, handleResetNeedeLeads } = useContext(AdminContext);
   const [activeTab, setActiveTab] = useState('overview');
   const [leadsToShow, setLeadsToShow] = useState(10);
   const [globalSearch, setGlobalSearch] = useState('');
@@ -159,10 +159,6 @@ export const AdminDashboard = () => {
     return Math.max(0, 50 - leads.filter(l => l.assigned_to === Number(callerId)).length);
   };
 
-  // Handler to reset needed leads for a caller
-  const handleResetNeededLeads = (callerId: string) => {
-    setCallerNeededLeads(prev => ({ ...prev, [callerId]: 50 }));
-  };
 
   // File upload handler for leads
   const handleLeadsFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -534,6 +530,14 @@ export const AdminDashboard = () => {
           <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold">Caller Management</h3>
+              <Button
+                            
+                            variant="outline"
+                            onClick={() => handleResetNeededLeads()}
+                            className="ml-2"
+                          >
+                            Reset
+                </Button> 
             </div>
             
             <div className="overflow-x-auto">
@@ -579,14 +583,7 @@ export const AdminDashboard = () => {
                       <td className="py-3 px-4">
                         <div className="flex items-center space-x-2">
                           {/* <span>{getNeededLeads(caller.id)}</span>
-                          <Button
-                            size="xs"
-                            variant="outline"
-                            onClick={() => handleResetNeededLeads(caller.id)}
-                            className="ml-2"
-                          >
-                            Reset
-                          </Button> */}
+                          */}
                         </div>
                       </td>
                       <td className="py-3 px-4">

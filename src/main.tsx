@@ -10,10 +10,12 @@ import { DashboardStatsProvider } from './contexts/DashboardStatsContext';
 import { AuthProvider } from './context/AuthContext';
 import { AdminProvider } from './contexts/AdminContext.tsx';
 import { BrowserRouter } from 'react-router-dom';
+import { SalesProvider } from './contexts/SalesContext.tsx';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AdminProvider>
     <AuthProvider>
+      <SalesProvider>
       <LeadsProvider>
         <AccountsProvider>
           <BatchesProvider>
@@ -27,6 +29,7 @@ createRoot(document.getElementById('root')!).render(
           </BatchesProvider>
         </AccountsProvider>
       </LeadsProvider>
+      </SalesProvider>
     </AuthProvider>
     </AdminProvider>
   </StrictMode>

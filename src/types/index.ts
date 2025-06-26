@@ -14,11 +14,10 @@ export interface Lead {
   contact_number: string;
   email: string;
   source: string;
-  status: 'new' | 'pick' | 'dnp' | 'contacted' | 'callback' | 'not_interested' | 'delete';
-  academics: {
-    class12: boolean;
-    pcm: boolean;
-    english: boolean;
+  status: 'new' | 'pick' | 'dnp' | 'contacted' | 'closed-success' | 'under-review' | 'delete' | 'interested' | 'converted';
+  board_score: {
+    pcm_score: Number;
+    english_score: Number;
   };
   batch?: string;
   books?: string;
