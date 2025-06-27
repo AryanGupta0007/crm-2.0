@@ -5,6 +5,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import type { Lead, Batch } from '../types';
 import { AccountsContext } from '../contexts/AccountsContext';
+import { useNavigate } from 'react-router-dom';
 
 export const AccountsDashboard = () => {
   const { leads, fetchLeads, batches, fetchBatches, handleMarkAsFake, handleVerificationUpdate } = useContext(AccountsContext);
@@ -13,6 +14,7 @@ export const AccountsDashboard = () => {
   const [fakeNotifications, setFakeNotifications] = useState<{ id: string; name: string }[]>([]);
   const [reuploadProofs, setReuploadProofs] = useState<{ [leadId: string]: File | null }>({});
   const [fakeDates, setFakeDates] = useState<{ [leadId: string]: string }>({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchLeads();
@@ -206,16 +208,48 @@ export const AccountsDashboard = () => {
                     <td className="py-3 px-4">₹{lead.revenue !== undefined ? lead.revenue : '-'}</td>
                     <td className="py-3 px-4">{lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '-'}</td>
                     <td className="py-3 px-4">{lead.sale_details.payment_ss ? (
-                      <a href={`http://localhost:8000/api/gen/lead/${lead.id}/download-image/?field=payment_ss`} target="_blank" rel="noopener noreferrer">View Proof</a>
+                      <>
+                        <button 
+                          onClick={() => window.location.href = `/proof?leadId=${lead.id}&field=payment_ss`}
+                          className="text-blue-600 underline hover:text-blue-800"
+                        >
+                          View Proof
+                        </button>
+                        <div className="text-xs text-gray-500">{lead.sale_details.payment_ss.split('/').pop()}</div>
+                      </>
                     ) : "-"}</td>
                     <td className="py-3 px-4">{lead.sale_details.discount_ss ? (
-                      <a href={`http://localhost:8000/api/gen/lead/${lead.id}/download-image/?field=discount_ss`} target="_blank" rel="noopener noreferrer">View Proof</a>
+                      <>
+                        <button 
+                          onClick={() => window.location.href = `/proof?leadId=${lead.id}&field=discount_ss`}
+                          className="text-blue-600 underline hover:text-blue-800"
+                        >
+                          View Proof
+                        </button>
+                        <div className="text-xs text-gray-500">{lead.sale_details.discount_ss.split('/').pop()}</div>
+                      </>
                     ) : "-"}</td>
                     <td className="py-3 px-4">{lead.sale_details.books_ss ? (
-                      <a href={`http://localhost:8000/api/gen/lead/${lead.id}/download-image/?field=books_ss`} target="_blank" rel="noopener noreferrer">View Proof</a>
+                      <>
+                        <button 
+                          onClick={() => window.location.href = `/proof?leadId=${lead.id}&field=books_ss`}
+                          className="text-blue-600 underline hover:text-blue-800"
+                        >
+                          View Proof
+                        </button>
+                        <div className="text-xs text-gray-500">{lead.sale_details.books_ss.split('/').pop()}</div>
+                      </>
                     ) : "-"}</td>
                     <td className="py-3 px-4">{lead.sale_details.form_ss ? (
-                      <a href={`http://localhost:8000/api/gen/lead/${lead.id}/download-image/?field=form_ss`} target="_blank" rel="noopener noreferrer">View Proof</a>
+                      <>
+                        <button 
+                          onClick={() => window.location.href = `/proof?leadId=${lead.id}&field=form_ss`}
+                          className="text-blue-600 underline hover:text-blue-800"
+                        >
+                          View Proof
+                        </button>
+                        <div className="text-xs text-gray-500">{lead.sale_details.form_ss.split('/').pop()}</div>
+                      </>
                     ) : "-"}</td>
                     <td className="py-3 px-4">{lead.sale_details.comment ? lead.sale_details.comment : ''}</td>
                     <td className="py-3 px-4">

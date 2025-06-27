@@ -52,23 +52,23 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const fetchLeads = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/admin/leads/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/leads/`);
     setLeads(Array.isArray(data) ? data : data.leads || []);
   }, []);
 
   const fetchUsers = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/admin/employee/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/employee/`);
     console.log(data)
     setUsers(data.employees);
   }, []);
 
   const handleResetNeededLeads = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/admin/reset-allot-leads/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/reset-allot-leads/`);
     console.log(data)
   }, [])
 
   const fetchBatches = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/admin/batch/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/batch/`);
     setBatches(Array.isArray(data) ? data : data.batches || []);
   }, []);
 
@@ -77,7 +77,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         'assigned_to': data.userID,
         'id': data.leadID
     }
-    await fetchWithAuth('http://localhost:8000/api/admin/leads/', {
+    await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/leads/`, {
         method: "PATCH",
         body: JSON.stringify(payload),
         });
@@ -91,7 +91,7 @@ const updateLeadStatus = useCallback(async (data: {status: string, leadID: numbe
             'status': data.status,
             'id': data.leadID
         }
-        await fetchWithAuth('http://localhost:8000/api/admin/leads/', {
+        await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/leads/`, {
             method: "PATCH",
             body: JSON.stringify(payload),
             });
@@ -100,12 +100,12 @@ const updateLeadStatus = useCallback(async (data: {status: string, leadID: numbe
         }, [fetchLeads])     
 
   const fetchAccounts = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/admin/leads/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/leads/`);
     setAccounts(Array.isArray(data) ? data : data.accounts || []);
   }, []);
 
   const fetchDashboardStats = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/admin/dashboard-stats/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/dashboard-stats/`);
     setDashboardStats(data);
   }, []);
 
@@ -116,7 +116,7 @@ const updateLeadStatus = useCallback(async (data: {status: string, leadID: numbe
         book_price: batch.booksPrice,
         status: batch.status
     }
-    await fetchWithAuth('http://localhost:8000/api/admin/batch/', {
+    await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/batch/`, {
       method: 'POST',
       body: JSON.stringify(payload),
     });

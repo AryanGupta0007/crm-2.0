@@ -74,10 +74,10 @@ export const LeadCard = ({ lead, onStatusUpdate, onAddComment }: LeadCardProps) 
         </div>
       </div>
 
-      {lead.batch && (
+      {lead.sale_details.batch && (
         <div className="space-y-1">
           <p className="text-sm font-medium text-gray-700">Batch:</p>
-          <p className="text-sm text-gray-600">{lead.batch}</p>
+          <p className="text-sm text-gray-600">{lead.batch.name}</p>
         </div>
       )}
 

@@ -5,12 +5,14 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Lead } from '../types';
 import { OperationsContext } from '../contexts/OperationsContext';
+import { useNavigate } from 'react-router-dom';
 
 export const OperationsDashboard = () => {
   const {fetchLeads, fetchBatches, leads, batches, handleAddedToGroup, handleRegisteredOnApp} = useContext(OperationsContext);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<Lead['status'] | 'all'>('all');
   const [activeTab, setActiveTab] = useState('verifications');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchLeads();
@@ -210,7 +212,7 @@ export const OperationsDashboard = () => {
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h3 className="font-semibold text-gray-900">{lead.name}</h3>
-                      <p className="text-sm text-gray-600">{lead.sale_details?.batch}</p>
+                      <p className="text-sm text-gray-600">{lead.sale_details?.batch !== undefined ? String(lead.sale_details.batch) : '-'}</p>
                     </div>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(lead.status)}`}>
                       {lead.status.toUpperCase()}
@@ -247,7 +249,7 @@ export const OperationsDashboard = () => {
                       </td>
                       <td className="py-3 px-4">{lead.contact_number}</td>
                       <td className="py-3 px-4">{lead.sale_details.batch !== undefined ? String(lead.sale_details.batch) : '-'}</td>
-                      <td className="py-3 px-4">{lead.sale_details.buy_books !== undefined ? (typeof lead.sale_details.buy_books === 'boolean' ? (lead.books ? 'Yes' : 'No') : String(lead.books)) : '-'}</td>
+                      <td className="py-3 px-4">{lead.sale_details.buy_books !== undefined ? (typeof lead.sale_details.buy_books === 'boolean' ? (lead.sale_details.buy_books ? 'Yes' : 'No') : String(lead.sale_details.buy_books)) : '-'}</td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(lead.status)}`}>
                           {lead.status.toUpperCase()}
@@ -282,7 +284,55 @@ export const OperationsDashboard = () => {
                         </button>
                       </td>
                       <td className="py-3 px-4">₹{lead.revenue}</td>
-                      <td className="py-3 px-4"><Button size="sm" variant="outline">View Details</Button></td>
+                      <td className="py-3 px-4">
+                        {lead.sale_details.payment_ss && (
+                          <div className="text-xs text-gray-500 mb-1">{lead.sale_details.payment_ss.split('/').pop()}</div>
+                        )}
+                        {lead.sale_details.discount_ss && (
+                          <div className="text-xs text-gray-500 mb-1">{lead.sale_details.discount_ss.split('/').pop()}</div>
+                        )}
+                        {lead.sale_details.books_ss && (
+                          <div className="text-xs text-gray-500 mb-1">{lead.sale_details.books_ss.split('/').pop()}</div>
+                        )}
+                        {lead.sale_details.form_ss && (
+                          <div className="text-xs text-gray-500 mb-1">{lead.sale_details.form_ss.split('/').pop()}</div>
+                        )}
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {lead.sale_details.payment_ss && (
+                            <button 
+                              onClick={() => window.location.href = `/proof?leadId=${lead.id}&field=payment_ss`}
+                              className="text-xs text-blue-600 underline hover:text-blue-800"
+                            >
+                              Payment
+                            </button>
+                          )}
+                          {lead.sale_details.discount_ss && (
+                            <button 
+                              onClick={() => window.location.href = `/proof?leadId=${lead.id}&field=discount_ss`}
+                              className="text-xs text-blue-600 underline hover:text-blue-800"
+                            >
+                              Discount
+                            </button>
+                          )}
+                          {lead.sale_details.books_ss && (
+                            <button 
+                              onClick={() => window.location.href = `/proof?leadId=${lead.id}&field=books_ss`}
+                              className="text-xs text-blue-600 underline hover:text-blue-800"
+                            >
+                              Books
+                            </button>
+                          )}
+                          {lead.sale_details.form_ss && (
+                            <button 
+                              onClick={() => window.location.href = `/proof?leadId=${lead.id}&field=form_ss`}
+                              className="text-xs text-blue-600 underline hover:text-blue-800"
+                            >
+                              Form
+                            </button>
+                          )}
+                        </div>
+                        <Button size="sm" variant="outline">View Details</Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

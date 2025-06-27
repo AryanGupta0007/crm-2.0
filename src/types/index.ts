@@ -9,6 +9,10 @@ export interface User {
 }
 
 export interface Lead {
+  batch: {
+    id: number;
+    name: string;
+  }
   id: string;
   name: string;
   contact_number: string;
@@ -27,7 +31,12 @@ export interface Lead {
     batch: Number,
     buy_books: Boolean,
     followUpDate: string,
-    comment: string
+    comment: string,
+    discount?: boolean,
+    payment_ss?: string,
+    discount_ss?: string,
+    books_ss?: string,
+    form_ss?: string
   };
   account_details: {
     payment_verification_status: string

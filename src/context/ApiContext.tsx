@@ -52,7 +52,7 @@ export const ApiProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUsers = async () => {
     try {
-      const data = await fetchWithAuth('http://localhost:8000/api/admin/employee/');
+      const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/employee/`);
       setUsers(Array.isArray(data) ? data : data ? [data] : []);
     } catch (err: any) {
       setError(err.message);
@@ -61,7 +61,7 @@ export const ApiProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchLeads = async () => {
     try {
-      const data = await fetchWithAuth('http://localhost:8000/api/admin/leads/');
+      const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/leads/`);
       setLeads(data);
     } catch (err: any) {
       setError(err.message);
@@ -70,7 +70,7 @@ export const ApiProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchAccounts = async () => {
     try {
-      const data = await fetchWithAuth('http://localhost:8000/api/admin/leads/');
+      const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/leads/`);
       setAccounts(data);
     } catch (err: any) {
       setError(err.message);
@@ -79,7 +79,7 @@ export const ApiProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchBatches = async () => {
     try {
-      const data = await fetchWithAuth('http://localhost:8000/api/admin/batch/');
+      const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/batch/`);
       setBatches(data);
     } catch (err: any) {
       setError(err.message);
@@ -88,7 +88,7 @@ export const ApiProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchDashboardStats = async () => {
     try {
-      const data = await fetchWithAuth('http://localhost:8000/api/admin/dashboard-stats/');
+      const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/dashboard-stats/`);
       setDashboardStats(data);
     } catch (err: any) {
       setError(err.message);

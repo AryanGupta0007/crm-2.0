@@ -42,19 +42,19 @@ export const OperationsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // })
 
   const fetchLeads = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/gen/under-review-leads/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/gen/under-review-leads/`);
     console.log('leads fetched', data);
     setLeads(data.leads);
   }, []);
 
   const fetchUsers = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/gen/current-user/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/gen/current-user/`);
     console.log('fetched user, ', data)
     setUsers(Array.isArray(data) ? data : data ? [data] : []);
   }, []);
 
   const fetchBatches = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/gen/batch/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/gen/batch/`);
     console.log('batches fetched', data);
     setBatches(data.batches);
   }, []);
@@ -64,7 +64,7 @@ export const OperationsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       id: leadId,
       added_to_group: added
     };
-    await fetchWithAuth('http://localhost:8000/api/ops/lead/', {
+    await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/ops/lead/`, {
       method: 'PATCH',
       body: JSON.stringify(payload),
     });
@@ -76,7 +76,7 @@ export const OperationsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       id: leadId,
       registered_on_app: registered
     };
-    await fetchWithAuth('http://localhost:8000/api/ops/lead/', {
+    await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/ops/lead/`, {
       method: 'PATCH',
       body: JSON.stringify(payload),
     });

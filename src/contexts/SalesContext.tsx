@@ -13,11 +13,12 @@ interface SalesContextType {
   handleStatusUpdate: (leadId: string, status: string) => Promise<void>;
   uploadSaleProofs: (leadId: string, file: File, proofType: string) => Promise<void>;
   handleSaleStatusUpdate: (leadId: string, status: string) => Promise<void>;
-  handleBatchUpdate: (leadId: string, status: string) => Promise<void>;
+  handleBatchUpdate: (leadId: string, batch: number) => Promise<void>;
   handleEnglishScoreUpdate: (leadId: string, score: string) => Promise<void>;
   handlePCMScoreUpdate: (leadId: string, score: string) => Promise<void>;
   handleBookUpdate: (leadId: string, books: boolean) => Promise<void>;
   handlefollowUpUpdate: (leadId: string, date: string) => Promise<void>;
+  handleDiscountUpdate: (leadId: string, discount: boolean) => Promise<void>;
 }
 
 export const SalesContext = createContext<SalesContextType>({
@@ -37,6 +38,7 @@ export const SalesContext = createContext<SalesContextType>({
   handlePCMScoreUpdate: async () => {},
   handleBookUpdate: async () => {},
   handlefollowUpUpdate: async () => {},
+  handleDiscountUpdate: async () => {},
 });
 
 export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -54,19 +56,19 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const fetchLeads = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/sales/leads/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/sales/leads/`);
     console.log('leads fetched', data);
     setLeads(data.leads);
   }, []);
 
   const fetchUsers = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/gen/current-user/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/gen/current-user/`);
     console.log('fetched user, ', data)
     setUsers(Array.isArray(data) ? data : data ? [data] : []);
   }, []);
 
   const fetchBatches = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/gen/batch/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/gen/batch/`);
     console.log('batches fetched', data);
     setBatches(data.batches);
   }, []);
@@ -80,7 +82,7 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       'id': leadId,
       'comment': comment // This is updating status, not adding a comment.
     };
-    await fetchWithAuth('http://localhost:8000/api/sales/leads/', {
+    await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/sales/leads/`, {
         method: "PATCH",
         body: JSON.stringify(payload),
     });
@@ -93,7 +95,7 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         'id': leadId,
         'status': status
     }
-    await fetchWithAuth('http://localhost:8000/api/sales/leads/', {
+    await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/sales/leads/`, {
         method: "PATCH",
         body: JSON.stringify(payload),
         });
@@ -101,12 +103,12 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, [fetchLeads]);
 
 
-    const handleBatchUpdate = useCallback(async (leadId: string, status: string) => {
+    const handleBatchUpdate = useCallback(async (leadId: string, batch: number) => {
       const payload = {
           'id': leadId,
-          'status': status
+          'batch': batch
       }
-      await fetchWithAuth('http://localhost:8000/api/sales/leads/', {
+      await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/sales/leads/`, {
           method: "PATCH",
           body: JSON.stringify(payload),
           });
@@ -119,7 +121,7 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             'id': leadId,
             'english_score': score
         }
-        await fetchWithAuth('http://localhost:8000/api/sales/boardScore/', {
+        await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/sales/boardScore/`, {
             method: "PATCH",
             body: JSON.stringify(payload),
             });
@@ -132,7 +134,7 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             'id': leadId,
             'pcm_score': score
         }
-        await fetchWithAuth('http://localhost:8000/api/sales/boardScore/', {
+        await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/sales/boardScore/`, {
             method: "PATCH",
             body: JSON.stringify(payload),
             });
@@ -146,7 +148,7 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             'id': leadId,
             'buy_books': books
         }
-        await fetchWithAuth('http://localhost:8000/api/sales/leads/', {
+        await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/sales/leads/`, {
             method: "PATCH",
             body: JSON.stringify(payload),
             });
@@ -159,7 +161,7 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               'id': leadId,
               'followUpDate': date
           }
-          await fetchWithAuth('http://localhost:8000/api/sales/leads/', {
+          await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/sales/leads/`, {
               method: "PATCH",
               body: JSON.stringify(payload),
               });
@@ -171,7 +173,7 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         'id': leadId,
         'status': status
     }
-    await fetchWithAuth('http://localhost:8000/api/sales/lead/', {
+    await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/sales/lead/`, {
         method: "PATCH",
         body: JSON.stringify(payload),
         });
@@ -187,13 +189,35 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (proofType === "payment_proof"){
       formData.append("payment_ss", file);
     }
-    await fetch('http://localhost:8000/api/sales/leads/', {
+    if (proofType === "form_proof"){
+      formData.append("form_ss", file);
+    }
+    if (proofType === "discount_proof"){
+      formData.append("discount_ss", file);
+    }
+    
+    if (proofType === "books_proof"){
+      formData.append("discount_ss", file);
+    }
+    await fetch(`${import.meta.env.VITE_API_BASE_URL}/sales/leads/`, {
       method: 'PATCH',
       headers,
       body: formData,
     });
     await fetchLeads();
   };
+
+  const handleDiscountUpdate = useCallback(async (leadId: string, discount: boolean) => {
+    const payload = {
+      'id': leadId,
+      'discount': discount
+    };
+    await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/sales/leads/`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+    await fetchLeads();
+  }, [fetchLeads]);
 
   return (
     <SalesContext.Provider value={{
@@ -213,6 +237,7 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       handlePCMScoreUpdate,
       handleBookUpdate,
       handlefollowUpUpdate,
+      handleDiscountUpdate,
     }}>
       {children}
     </SalesContext.Provider>

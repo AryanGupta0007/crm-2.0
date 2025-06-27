@@ -10,6 +10,7 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { SalesDashboard } from './pages/SalesDashboard';
 import { OperationsDashboard } from './pages/OperationsDashboard';
 import { AccountsDashboard } from './pages/AccountsDashboard';
+import { ProofViewer } from './pages/ProofViewer';
 
 function App() {
   const { user, loading } = useAuth();
@@ -18,6 +19,16 @@ function App() {
   const [showSignup, setShowSignup] = useState(false);
 
   useEffect(() => {
+    // Check if we're on a proof viewer URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const leadId = urlParams.get('leadId');
+    const field = urlParams.get('field');
+    
+    if (leadId && field && window.location.pathname === '/proof') {
+      setCurrentPath('/proof');
+      return;
+    }
+
     let userType = localStorage.getItem('userType')
     if (userType) {
 
@@ -71,6 +82,9 @@ function App() {
 
   // Update renderCurrentPage to handle accounts user and admin access to /accounts
   const renderCurrentPage = () => {
+    if (currentPath === '/proof') {
+      return <ProofViewer />;
+    }
     if (!user) {
       return (
         <LandingPage 

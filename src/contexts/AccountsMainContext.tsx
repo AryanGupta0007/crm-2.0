@@ -34,17 +34,17 @@ export const AccountsMainProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   const fetchAccounts = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/admin/leads/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/leads/`);
     setAccounts(data);
   }, []);
 
   const fetchUsers = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/admin/employee/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/employee/`);
     setUsers(Array.isArray(data) ? data : data ? [data] : []);
   }, []);
 
   const fetchBatches = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/admin/batch/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/admin/batch/`);
     setBatches(data);
   }, []);
 

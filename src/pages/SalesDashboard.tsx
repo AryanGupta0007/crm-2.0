@@ -7,6 +7,7 @@ import { Lead, Batch } from '../types';
 import { format } from 'date-fns';
 import { SalesContext } from '../contexts/SalesContext';
 import { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const SalesDashboard = () => {
   const {
@@ -25,7 +26,8 @@ export const SalesDashboard = () => {
     handleEnglishScoreUpdate,
     handlePCMScoreUpdate,
     handleBookUpdate,
-    handlefollowUpUpdate
+    handlefollowUpUpdate,
+    handleDiscountUpdate
   } = useContext(SalesContext);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<Lead['status'] | 'all'>('all');
@@ -35,6 +37,7 @@ export const SalesDashboard = () => {
   const [uploadSuccess, setUploadSuccess] = useState<{[key: string]: boolean}>({});
   const [commentEdits, setCommentEdits] = useState<{[leadId: string]: string | undefined}>({});
   const [commentSaving, setCommentSaving] = useState<{[leadId: string]: boolean}>({});
+  const navigate = useNavigate();
 
   const proofColumns = ['payment_proof', 'discount_proof', 'books_proof', 'form_proof'];
 
@@ -79,7 +82,7 @@ export const SalesDashboard = () => {
   const isFakeLead = (lead: Lead) => {
     return (
       (lead as any).verification === 'fake' ||
-      (lead.sale_details.comments && lead.sale_details.comments.toLowerCase().includes('fake'))
+      (lead.sale_details.comment && lead.sale_details.comment.toLowerCase().includes('fake'))
     );
   };
 
@@ -264,6 +267,7 @@ export const SalesDashboard = () => {
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Score</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Batch</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Books</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Discount</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Follow Up</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Comments</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700">Sales Status</th>
@@ -293,9 +297,9 @@ export const SalesDashboard = () => {
                           <option value="dnp">DNP</option>
                           <option value="contacted">CTC</option>
                           <option value="callback">CB</option>
-                          <option value="not_interested">NA</option>
-                          <option value="converted">CLOSED SUCCESS</option>
-                          <option value="under_review">UNDER REVIEW</option>
+                          <option value="not-interested">NA</option>
+                          <option value="closed-success">CLOSED SUCCESS</option>
+                          <option value="under-review">UNDER REVIEW</option>
                         </select>
                       </td>
                       <td className="py-3 px-4">
@@ -331,23 +335,33 @@ export const SalesDashboard = () => {
                       <td className="py-3 px-4">
                         <select
                           className="text-sm border rounded p-1.5 w-full bg-green-100"
-                          value={(lead.sale_details.batch) || ''}
-                          onChange={e => handleBatchUpdate(lead.id, e.target.value)}
+                          value={lead.batch?.id?.toString() || ''}
+                          onChange={e => handleBatchUpdate(lead.id, Number(e.target.value))}
                         >
                           <option value="">Select Batch</option>
                           {batches.map((batch) => (
                             <option key={batch.id} value={batch.id}>{batch.name}</option>
                           ))}
                         </select>
+                      
                       </td>
                       <td className="py-3 px-4">
                         <input
                           type="checkbox"
-                          className="form-checkbox h-5 w-5 text-green-600"
+                          className="form-checkbox h-5 w-5 text-blue-600"
                           checked={Boolean(lead.sale_details.buy_books)}
                           onChange={e => handleBookUpdate(lead.id, e.target.checked)}
                         />
                       </td>
+                      <td className="py-3 px-4">
+                        <input
+                          type="checkbox"
+                          className="form-checkbox h-5 w-5 text-blue-600"
+                          checked={Boolean(lead.sale_details.discount)}
+                          onChange={e => handleDiscountUpdate(lead.id, e.target.checked)}
+                        />
+                      </td>
+                      
                       <td className="py-3 px-4">
                         <input
                           type="date"
@@ -390,9 +404,9 @@ export const SalesDashboard = () => {
                           <option value="dnp">DNP</option>
                           <option value="contacted">CTC</option>
                           <option value="callback">CB</option>
-                          <option value="not_interested">NA</option>
-                          <option value="converted">CLOSED SUCCESS</option>
-                          <option value="under_review">UNDER REVIEW</option>
+                          <option value="not-interested">NA</option>
+                          <option value="closed-success">CLOSED SUCCESS</option>
+                          <option value="under-review">UNDER REVIEW</option>
                         </select>
                       </td>
                       <td className="py-3 px-4">
@@ -405,34 +419,150 @@ export const SalesDashboard = () => {
                         </div>
                       </td>
                     </tr>
-                    {lead.sale_details.status === 'closed-success' && (
+                    {lead.status === 'closed-success' && (
                       <tr className="bg-gray-50 border-b border-gray-200">
                         <td colSpan={11} className="py-4 px-4">
                           <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
-                            {['Payment Proof', 'Discount Proof', 'Books Proof', 'Form Proof'].map((label, idx) => (
-                              <div key={label} className="flex flex-col items-center">
-                                <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
+                            {/* Payment Proof */}
+                            <div className="flex flex-col items-center">
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Payment Proof</label>
+                              {lead.sale_details.payment_ss && (
+                                <span className="text-xs text-gray-500 mb-1">
+                                  Uploaded: {lead.sale_details.payment_ss.split('/').pop()} {' '}
+                                  <button 
+                                    onClick={() => window.location.href = `/proof?leadId=${lead.id}&field=payment_ss`}
+                                    className="text-blue-600 underline ml-1 cursor-pointer"
+                                  >
+                                    View
+                                  </button>
+                                </span>
+                              )}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={e => handleImageInputChange(lead.id, 0, e.target.files?.[0] || null)}
+                                className="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-maritime-50 file:text-maritime-700 hover:file:bg-maritime-100"
+                              />
+                              {uploading[`${lead.id}_payment_proof`] && (
+                                <span className="text-xs text-blue-500 mt-1">Uploading...</span>
+                              )}
+                              {uploadSuccess[`${lead.id}_payment_proof`] && (
+                                <span className="text-xs text-green-600 mt-1">Uploaded!</span>
+                              )}
+                              {imageInputs[lead.id]?.[0] instanceof File && (
+                                <img
+                                  src={URL.createObjectURL(imageInputs[lead.id][0] as File)}
+                                  alt={`Preview Payment Proof`}
+                                  className="mt-2 rounded shadow border max-h-24"
+                                />
+                              )}
+                            </div>
+                            {/* Discount Proof */}
+                            {lead.sale_details.discount && (
+                              <div className="flex flex-col items-center">
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Discount Proof</label>
+                                {lead.sale_details.discount_ss && (
+                                  <span className="text-xs text-gray-500 mb-1">
+                                    Uploaded: {lead.sale_details.discount_ss.split('/').pop()} {' '}
+                                    <button 
+                                      onClick={() => window.location.href = `/proof?leadId=${lead.id}&field=discount_ss`}
+                                      className="text-blue-600 underline ml-1 cursor-pointer"
+                                    >
+                                      View
+                                    </button>
+                                  </span>
+                                )}
                                 <input
                                   type="file"
                                   accept="image/*"
-                                  onChange={e => handleImageInputChange(lead.id, idx, e.target.files?.[0] || null)}
+                                  onChange={e => handleImageInputChange(lead.id, 1, e.target.files?.[0] || null)}
                                   className="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-maritime-50 file:text-maritime-700 hover:file:bg-maritime-100"
                                 />
-                                {uploading[`${lead.id}_${proofColumns[idx]}`] && (
+                                {uploading[`${lead.id}_discount_proof`] && (
                                   <span className="text-xs text-blue-500 mt-1">Uploading...</span>
                                 )}
-                                {uploadSuccess[`${lead.id}_${proofColumns[idx]}`] && (
+                                {uploadSuccess[`${lead.id}_discount_proof`] && (
                                   <span className="text-xs text-green-600 mt-1">Uploaded!</span>
                                 )}
-                                {imageInputs[lead.id]?.[idx] instanceof File && (
+                                {imageInputs[lead.id]?.[1] instanceof File && (
                                   <img
-                                    src={URL.createObjectURL(imageInputs[lead.id][idx] as File)}
-                                    alt={`Preview ${label}`}
+                                    src={URL.createObjectURL(imageInputs[lead.id][1] as File)}
+                                    alt={`Preview Discount Proof`}
                                     className="mt-2 rounded shadow border max-h-24"
                                   />
                                 )}
                               </div>
-                            ))}
+                            )}
+                            {/* Books Proof */}
+                            {lead.sale_details.buy_books && (
+                              <div className="flex flex-col items-center">
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Books Proof</label>
+                                {lead.sale_details.books_ss && (
+                                  <span className="text-xs text-gray-500 mb-1">
+                                    Uploaded: {lead.sale_details.books_ss.split('/').pop()} {' '}
+                                    <button 
+                                      onClick={() => window.location.href = `/proof?leadId=${lead.id}&field=books_ss`}
+                                      className="text-blue-600 underline ml-1 cursor-pointer"
+                                    >
+                                      View
+                                    </button>
+                                  </span>
+                                )}
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={e => handleImageInputChange(lead.id, 2, e.target.files?.[0] || null)}
+                                  className="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-maritime-50 file:text-maritime-700 hover:file:bg-maritime-100"
+                                />
+                                {uploading[`${lead.id}_books_proof`] && (
+                                  <span className="text-xs text-blue-500 mt-1">Uploading...</span>
+                                )}
+                                {uploadSuccess[`${lead.id}_books_proof`] && (
+                                  <span className="text-xs text-green-600 mt-1">Uploaded!</span>
+                                )}
+                                {imageInputs[lead.id]?.[2] instanceof File && (
+                                  <img
+                                    src={URL.createObjectURL(imageInputs[lead.id][2] as File)}
+                                    alt={`Preview Books Proof`}
+                                    className="mt-2 rounded shadow border max-h-24"
+                                  />
+                                )}
+                              </div>
+                            )}
+                            {/* Form Proof */}
+                            <div className="flex flex-col items-center">
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Form Proof</label>
+                              {lead.sale_details.form_ss && (
+                                <span className="text-xs text-gray-500 mb-1">
+                                  Uploaded: {lead.sale_details.form_ss.split('/').pop()} {' '}
+                                  <button 
+                                    onClick={() => window.location.href = `/proof?leadId=${lead.id}&field=form_ss`}
+                                    className="text-blue-600 underline ml-1 cursor-pointer"
+                                  >
+                                    View
+                                  </button>
+                                </span>
+                              )}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={e => handleImageInputChange(lead.id, 3, e.target.files?.[0] || null)}
+                                className="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-maritime-50 file:text-maritime-700 hover:file:bg-maritime-100"
+                              />
+                              {uploading[`${lead.id}_form_proof`] && (
+                                <span className="text-xs text-blue-500 mt-1">Uploading...</span>
+                              )}
+                              {uploadSuccess[`${lead.id}_form_proof`] && (
+                                <span className="text-xs text-green-600 mt-1">Uploaded!</span>
+                              )}
+                              {imageInputs[lead.id]?.[3] instanceof File && (
+                                <img
+                                  src={URL.createObjectURL(imageInputs[lead.id][3] as File)}
+                                  alt={`Preview Form Proof`}
+                                  className="mt-2 rounded shadow border max-h-24"
+                                />
+                              )}
+                            </div>
                           </div>
                         </td>
                       </tr>

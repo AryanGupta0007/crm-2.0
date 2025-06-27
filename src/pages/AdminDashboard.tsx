@@ -26,6 +26,13 @@ export const AdminDashboard = () => {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
 
+  const handleNeededLeadsChange = (callerId: string, value: string) => {
+    const numValue = parseInt(value, 10);
+    if (!isNaN(numValue) && numValue >= 0) {
+      setCallerNeededLeads(prev => ({ ...prev, [callerId]: numValue }));
+    }
+  };
+
   useEffect(() => {
     fetchLeads();
     fetchBatches();
@@ -171,7 +178,7 @@ export const AdminDashboard = () => {
       const formData = new FormData();
       formData.append('file', file);
       const token = localStorage.getItem('accessToken');
-      const res = await fetch('http://localhost:8000/api/admin/leads/', {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/leads/`, {
         method: 'POST',
         headers: token ? { 'Authorization': `${token}` } : undefined,
         body: formData,
@@ -555,51 +562,47 @@ export const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {salesTeamMembers.map((caller) => (
-                    <tr key={caller.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4">
-                        <div className="flex items-center space-x-3">
-                          <img 
-                            src={"https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?semt=ais_hybrid&w=740"} 
-                            alt={caller.name}
-                            className="w-8 h-8 rounded-full object-cover"
+                  {salesTeamMembers.map((caller) => {
+                    const leadsAssigned = leads.filter(l => l.assigned_to === Number(caller.id)).length;
+                    const leadsConverted = leads.filter(l => l.assigned_to === Number(caller.id) && l.status === 'converted').length;
+                    const remainingLeads = leads.filter(l => l.assigned_to === Number(caller.id) && !['converted', 'dnp'].includes(l.status)).length
+                    const revenueGenerated = (leadsConverted * 50000).toLocaleString();
+                    const neededLeads = Math.max(0, 50 - leadsAssigned);
+
+                    return (
+                      <tr key={caller.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-4">
+                          <div className="font-medium text-gray-900">{caller.name}</div>
+                        </td>
+                        <td className="py-3 px-4">{caller.email}</td>
+                        <td className="py-3 px-4">{leadsAssigned}</td>
+                        <td className="py-3 px-4">{remainingLeads}</td>
+                        <td className="py-3 px-4">{leadsConverted}</td>
+                        <td className="py-3 px-4">
+                            <span className="font-medium text-green-600">
+                                ₹{revenueGenerated}
+                            </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <input
+                            type="number"
+                            className="w-24 p-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-maritime-500"
+                            value={callerNeededLeads[caller.id.toString()] ?? neededLeads}
+                            onChange={(e) => handleNeededLeadsChange(caller.id.toString(), e.target.value)}
                           />
-                          <p className="font-medium text-gray-900">{caller.name}</p>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">{caller.email}</td>
-                      <td className="py-3 px-4">{leads.filter(l => l.assigned_to === Number(caller.id)).length}</td>
-                      <td className="py-3 px-4">
-                        {leads.filter(l => l.assigned_to === Number(caller.id) && !['converted', 'dnp'].includes(l.status)).length}
-                      </td>
-                      <td className="py-3 px-4">
-                        {leads.filter(l => l.assigned_to === Number(caller.id) && l.status === 'converted').length}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="font-medium text-green-600">
-                          ₹{(leads.filter(l => l.assigned_to === Number(caller.id) && l.status === 'converted').length * 50000).toLocaleString()}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center space-x-2">
-                          {/* <span>{getNeededLeads(caller.id)}</span>
-                          */}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
+                        </td>
+                        <td className="py-3 px-4">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                          >
                             <Save size={14} className="mr-1" />
                             Save
                           </Button>
-                          <Button size="sm" variant="ghost">
-                            <Download size={14} className="mr-1" />
-                            Download
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

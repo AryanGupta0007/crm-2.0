@@ -19,7 +19,7 @@ export const UsersProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const token = localStorage.getItem('accessToken');
       const headers: HeadersInit = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `bearer ${token}`;
-      const res = await fetch('http://localhost:8000/api/users', { headers });
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users`, { headers });
       if (res.ok) {
         const data = await res.json();
         setUsers(data.users);

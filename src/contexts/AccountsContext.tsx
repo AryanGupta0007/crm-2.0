@@ -44,7 +44,7 @@ export const AccountsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const token = localStorage.getItem('accessToken');
       const headers: HeadersInit = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `${token}`;
-      const res = await fetch('http://localhost:8000/api/gen/under-review-leads/', { headers });
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/gen/under-review-leads/`, { headers });
       if (res.ok) {
         const data = await res.json();
         setLeads(data.leads);
@@ -61,7 +61,7 @@ export const AccountsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         "id": leadId,
         "payment_verification_status": "fake"
     }
-    const data = await fetchWithAuth('http://localhost:8000/api/accounts/lead/', {
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/accounts/lead/`, {
       method: "PATCH",
       body: JSON.stringify(payload)
     });
@@ -75,7 +75,7 @@ export const AccountsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         "id": leadId,
         "payment_verification_status": status
     }
-    const data = await fetchWithAuth('http://localhost:8000/api/accounts/lead/', {
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/accounts/lead/`, {
       method: "PATCH",
       body: JSON.stringify(payload)
     });
@@ -86,13 +86,13 @@ export const AccountsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
 
   const fetchUsers = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/gen/current-user/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/gen/current-user/`);
     console.log('fetched user, ', data)
     setUsers(Array.isArray(data) ? data : data ? [data] : []);
   }, []);
 
   const fetchBatches = useCallback(async () => {
-    const data = await fetchWithAuth('http://localhost:8000/api/gen/batch/');
+    const data = await fetchWithAuth(`${import.meta.env.VITE_API_BASE_URL}/gen/batch/`);
     console.log('batches fetched', data);
     setBatches(data.batches);
   }, []);

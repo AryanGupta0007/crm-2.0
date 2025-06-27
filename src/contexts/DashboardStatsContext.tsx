@@ -23,7 +23,7 @@ export const DashboardStatsProvider: React.FC<{ children: React.ReactNode }> = (
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/admin/dashboard-stats/');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/dashboard-stats/`);
       if (res.ok) {
         const data = await res.json();
         setStats(data.stats);

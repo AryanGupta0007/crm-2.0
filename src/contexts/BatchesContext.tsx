@@ -19,7 +19,7 @@ export const BatchesProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const token = localStorage.getItem('accessToken');
       const headers: HeadersInit = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
-      const res = await fetch('http://localhost:8000/api/gen/batches', { headers });
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/gen/batches`, { headers });
       if (res.ok) {
         const data = await res.json();
         setBatches(data.batches);
