@@ -125,7 +125,7 @@ export const LoginForm = ({ onSuccess, onSwitchToSignup }: LoginFormProps) => {
           </p>
         </div>
 
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+{/*         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
           <p className="text-sm text-gray-600 mb-2 font-medium">Demo Accounts:</p>
           <div className="space-y-1 text-xs text-gray-500">
             <p><strong>Admin:</strong> admin@buddingmariners.com</p>
@@ -134,7 +134,7 @@ export const LoginForm = ({ onSuccess, onSwitchToSignup }: LoginFormProps) => {
             <p><strong>Accounts:</strong> accounts@buddingmariners.com</p>
             <p><strong>Password:</strong> password</p>
           </div>
-        </div>
+        </div> */}
       </div>
     </motion.div>
   );
